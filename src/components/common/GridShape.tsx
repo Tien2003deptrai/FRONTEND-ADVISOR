@@ -8,5 +8,5 @@ export default function GridShape() {
         <img src="/images/shape/grid-01.svg" alt="grid" />
       </div>
     </>
-  );
+  )
 }

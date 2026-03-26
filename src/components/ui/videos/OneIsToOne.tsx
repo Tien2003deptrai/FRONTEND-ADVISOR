@@ -10,5 +10,5 @@ export default function OneIsToOne() {
         className="w-full h-full"
       ></iframe>
     </div>
-  );
+  )
 }

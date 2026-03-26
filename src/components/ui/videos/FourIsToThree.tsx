@@ -10,5 +10,5 @@ export default function FourIsToThree() {
         className="w-full h-full"
       ></iframe>
     </div>
-  );
+  )
 }

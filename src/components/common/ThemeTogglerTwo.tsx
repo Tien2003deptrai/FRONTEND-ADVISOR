@@ -1,7 +1,7 @@
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from '../../context/ThemeContext'
 
 export default function ThemeTogglerTwo() {
-  const { toggleTheme } = useTheme();
+  const { toggleTheme } = useTheme()
   return (
     <button
       onClick={toggleTheme}
@@ -36,5 +36,5 @@ export default function ThemeTogglerTwo() {
         />
       </svg>
     </button>
-  );
+  )
 }

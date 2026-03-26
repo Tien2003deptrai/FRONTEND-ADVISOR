@@ -1,8 +1,8 @@
-import PageBreadcrumb from "../components/common/PageBreadCrumb";
-import UserMetaCard from "../components/UserProfile/UserMetaCard";
-import UserInfoCard from "../components/UserProfile/UserInfoCard";
-import UserAddressCard from "../components/UserProfile/UserAddressCard";
-import PageMeta from "../components/common/PageMeta";
+import PageBreadcrumb from '../components/common/PageBreadCrumb'
+import UserMetaCard from '../components/UserProfile/UserMetaCard'
+import UserInfoCard from '../components/UserProfile/UserInfoCard'
+import UserAddressCard from '../components/UserProfile/UserAddressCard'
+import PageMeta from '../components/common/PageMeta'
 
 export default function UserProfiles() {
   return (
@@ -23,5 +23,5 @@ export default function UserProfiles() {
         </div>
       </div>
     </>
-  );
+  )
 }

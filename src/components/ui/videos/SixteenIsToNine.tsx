@@ -10,5 +10,5 @@ export default function SixteenIsToNine() {
         className="w-full h-full"
       ></iframe>
     </div>
-  );
+  )
 }

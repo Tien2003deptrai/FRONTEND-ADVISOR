@@ -25,5 +25,5 @@ export default function ThreeColumnImageGrid() {
         />
       </div>
     </div>
-  );
+  )
 }

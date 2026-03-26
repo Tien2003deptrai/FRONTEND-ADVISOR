@@ -10,5 +10,5 @@ export default function TwentyOneIsToNine() {
         className="w-full h-full"
       ></iframe>
     </div>
-  );
+  )
 }

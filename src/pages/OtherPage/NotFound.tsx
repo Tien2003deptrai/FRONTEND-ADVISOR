@@ -1,6 +1,6 @@
-import GridShape from "../../components/common/GridShape";
-import { Link } from "react-router";
-import PageMeta from "../../components/common/PageMeta";
+import GridShape from '../../components/common/GridShape'
+import { Link } from 'react-router'
+import PageMeta from '../../components/common/PageMeta'
 
 export default function NotFound() {
   return (
@@ -17,11 +17,7 @@ export default function NotFound() {
           </h1>
 
           <img src="/images/error/404.svg" alt="404" className="dark:hidden" />
-          <img
-            src="/images/error/404-dark.svg"
-            alt="404"
-            className="hidden dark:block"
-          />
+          <img src="/images/error/404-dark.svg" alt="404" className="hidden dark:block" />
 
           <p className="mt-10 mb-6 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
             We can’t seem to find the page you are looking for!
@@ -40,5 +36,5 @@ export default function NotFound() {
         </p>
       </div>
     </>
-  );
+  )
 }

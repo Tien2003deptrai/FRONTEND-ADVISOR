@@ -1,19 +1,19 @@
-import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import type React from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface Option {
-  value: string;
-  text: string;
+  value: string
+  text: string
 }
 
 interface MultiSelectProps {
-  label: string;
-  options: Option[];
-  defaultSelected?: string[];
-  value?: string[];
-  onChange?: (selected: string[]) => void;
-  disabled?: boolean;
-  placeholder?: string;
+  label: string
+  options: Option[]
+  defaultSelected?: string[]
+  value?: string[]
+  onChange?: (selected: string[]) => void
+  disabled?: boolean
+  placeholder?: string
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -23,85 +23,80 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   value,
   onChange,
   disabled = false,
-  placeholder = "Select options",
+  placeholder = 'Select options',
 }) => {
-  const isControlled = value !== undefined;
-  const [internalSelected, setInternalSelected] =
-    useState<string[]>(defaultSelected);
-  const selectedOptions = isControlled ? value : internalSelected;
-  const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isControlled = value !== undefined
+  const [internalSelected, setInternalSelected] = useState<string[]>(defaultSelected)
+  const selectedOptions = isControlled ? value : internalSelected
+  const [isOpen, setIsOpen] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   const updateSelection = (newSelected: string[]) => {
-    if (!isControlled) setInternalSelected(newSelected);
-    onChange?.(newSelected);
-  };
+    if (!isControlled) setInternalSelected(newSelected)
+    onChange?.(newSelected)
+  }
 
   const toggleDropdown = () => {
     if (!disabled) {
-      setIsOpen((prev) => !prev);
-      setFocusedIndex(-1);
+      setIsOpen(prev => !prev)
+      setFocusedIndex(-1)
     }
-  };
+  }
 
   const handleSelect = (optionValue: string) => {
     const newSelected = selectedOptions.includes(optionValue)
-      ? selectedOptions.filter((v) => v !== optionValue)
-      : [...selectedOptions, optionValue];
-    updateSelection(newSelected);
-  };
+      ? selectedOptions.filter(v => v !== optionValue)
+      : [...selectedOptions, optionValue]
+    updateSelection(newSelected)
+  }
 
   const removeOption = (optionValue: string) => {
-    updateSelection(selectedOptions.filter((v) => v !== optionValue));
-  };
+    updateSelection(selectedOptions.filter(v => v !== optionValue))
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (disabled) return;
+    if (disabled) return
 
-    e.preventDefault();
+    e.preventDefault()
     switch (e.key) {
-      case "Enter":
+      case 'Enter':
         if (!isOpen) {
-          setIsOpen(true);
+          setIsOpen(true)
         } else if (focusedIndex >= 0) {
-          handleSelect(options[focusedIndex].value);
+          handleSelect(options[focusedIndex].value)
         }
-        break;
-      case "Escape":
-        setIsOpen(false);
-        break;
-      case "ArrowDown":
+        break
+      case 'Escape':
+        setIsOpen(false)
+        break
+      case 'ArrowDown':
         if (!isOpen) {
-          setIsOpen(true);
+          setIsOpen(true)
         } else {
-          setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : 0));
+          setFocusedIndex(prev => (prev < options.length - 1 ? prev + 1 : 0))
         }
-        break;
-      case "ArrowUp":
+        break
+      case 'ArrowUp':
         if (isOpen) {
-          setFocusedIndex((prev) => (prev > 0 ? prev - 1 : options.length - 1));
+          setFocusedIndex(prev => (prev > 0 ? prev - 1 : options.length - 1))
         }
-        break;
+        break
     }
-  };
+  }
 
   return (
     <div className="w-full" ref={dropdownRef}>
@@ -128,15 +123,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             <div
               className={`mb-2 flex min-h-11  rounded-lg border border-gray-300 py-1.5 pl-3 pr-3 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-300 ${
                 disabled
-                  ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800"
-                  : "cursor-pointer"
+                  ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800'
+                  : 'cursor-pointer'
               }`}
             >
               <div className="flex flex-wrap flex-auto gap-2">
                 {selectedOptions.length > 0 ? (
-                  selectedOptions.map((value) => {
-                    const text =
-                      options.find((opt) => opt.value === value)?.text || value;
+                  selectedOptions.map(value => {
+                    const text = options.find(opt => opt.value === value)?.text || value
                     return (
                       <div
                         key={value}
@@ -145,9 +139,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                         <span className="flex-initial max-w-full">{text}</span>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!disabled) removeOption(value);
+                          onClick={e => {
+                            e.stopPropagation()
+                            if (!disabled) removeOption(value)
                           }}
                           disabled={disabled}
                           className="pl-2 text-gray-500 cursor-pointer group-hover:text-gray-400 dark:text-gray-400 disabled:cursor-not-allowed"
@@ -168,7 +162,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                           </svg>
                         </button>
                       </div>
-                    );
+                    )
                   })
                 ) : (
                   <div className="w-full h-full p-1 pr-2 text-sm text-gray-400 dark:text-gray-500 pointer-events-none">
@@ -179,17 +173,15 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               <div className="flex items-center self-start py-1 pl-1 pr-1 w-7">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDropdown();
+                  onClick={e => {
+                    e.stopPropagation()
+                    toggleDropdown()
                   }}
                   disabled={disabled}
                   className="w-5 h-5 text-gray-700 outline-hidden cursor-pointer focus:outline-hidden dark:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <svg
-                    className={`stroke-current transition-transform ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
+                    className={`stroke-current transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     width="20"
                     height="20"
                     viewBox="0 0 20 20"
@@ -212,20 +204,20 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           {isOpen && (
             <div
               className="absolute left-0 z-40 w-full overflow-y-auto bg-white rounded-lg shadow-sm top-full max-h-select dark:bg-gray-900"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
               role="listbox"
               aria-label={label}
             >
               {options.map((option, index) => {
-                const isSelected = selectedOptions.includes(option.value);
-                const isFocused = index === focusedIndex;
+                const isSelected = selectedOptions.includes(option.value)
+                const isFocused = index === focusedIndex
 
                 return (
                   <div
                     key={option.value}
                     className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800 ${
-                      isFocused ? "bg-primary/5" : ""
-                    } ${isSelected ? "bg-primary/10" : ""}`}
+                      isFocused ? 'bg-primary/5' : ''
+                    } ${isSelected ? 'bg-primary/10' : ''}`}
                     onClick={() => handleSelect(option.value)}
                     role="option"
                     aria-selected={isSelected}
@@ -236,14 +228,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                       </div>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MultiSelect;
+export default MultiSelect
