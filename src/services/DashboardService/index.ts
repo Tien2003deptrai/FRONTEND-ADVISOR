@@ -1,18 +1,18 @@
-import axiosInstance from '../axiosIntance';
-import { ApiResponse } from '../type';
+import axiosInstance from '../axiosIntance'
+import { ApiResponse } from '../type'
 
 class DashboardService {
-    private api = axiosInstance;
+  private api = axiosInstance
 
-    getStudentDashboard = async (body: object = {}): Promise<ApiResponse> => {
-        const response = await this.api.post('/dashboard/student', body);
-        return response.data
-    }
+  getStudentDashboard = async (body: object = {}): Promise<ApiResponse> => {
+    const response = await this.api.post('/dashboard/student', body)
+    return response.data
+  }
 
-    getFacultyDashboard = async (body: object = {}): Promise<ApiResponse> => {
-        const response = await this.api.post('/dashboard/faculty', body);
-        return response.data
-    }
+  getFacultyDashboard = async (body: object = {}): Promise<ApiResponse> => {
+    const response = await this.api.post('/dashboard/faculty', body)
+    return response.data
+  }
 }
 
-export const dashboardService = new DashboardService();
+export const dashboardService = new DashboardService()

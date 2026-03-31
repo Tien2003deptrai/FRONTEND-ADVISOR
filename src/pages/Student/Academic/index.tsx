@@ -7,18 +7,11 @@ import Button from '@/components/ui/button/Button'
 import Label from '@/components/form/Label'
 import InputField from '@/components/form/input/InputField'
 import Select from '@/components/form/Select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { academicService } from '@/services/AcademicService'
 import { dashboardService } from '@/services/DashboardService'
 import { masterDataService } from '@/services/MasterDataService'
 import { studentService } from '@/services/StudentService'
-import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type AcademicRow = {
   term_id?: string | { _id?: string }
@@ -86,8 +79,8 @@ export default function AcademicPage() {
       const res = await dashboardService.getStudentDashboard({ history_limit: 24 })
       const d = res.data as { academic_trend?: AcademicRow[] }
       setRows(d.academic_trend ?? [])
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       setRows([])
     } finally {
       setLoading(false)
@@ -104,8 +97,8 @@ export default function AcademicPage() {
       setTerms(listData.items ?? [])
       const active = activeRes.data as { _id?: string } | null
       if (active?._id) setDefaultTermId(String(active._id))
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     }
   }, [])
 
@@ -114,8 +107,8 @@ export default function AcademicPage() {
     try {
       const res = await studentService.getMyAdvisor()
       setAdvisorData((res.data as MyAdvisorData) ?? null)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       setAdvisorData(null)
     } finally {
       setAdvisorLoading(false)
@@ -174,8 +167,8 @@ export default function AcademicPage() {
       optFloat(studyHours, 'study_hours', 0, 1e6)
       optInt(motivation, 'motivation_score', 1, 5)
       optInt(stress, 'stress_level', 1, 5)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Dữ liệu không hợp lệ')
+    } catch {
+      toast.error('Dữ liệu không hợp lệ')
       return
     }
 
@@ -185,8 +178,8 @@ export default function AcademicPage() {
       toast.success(res.message || 'Đã lưu dữ liệu học tập')
       setModalOpen(false)
       void loadTable()
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setSaving(false)
     }
@@ -204,8 +197,9 @@ export default function AcademicPage() {
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Bảng từ <code className="text-xs">POST /dashboard/student</code> (academic_trend). Thêm/sửa qua{' '}
-          <code className="text-xs">POST /academic/submit</code> — theo chuẩn UI: form trong modal.
+          Bảng từ <code className="text-xs">POST /dashboard/student</code> (academic_trend).
+          Thêm/sửa qua <code className="text-xs">POST /academic/submit</code> — theo chuẩn UI: form
+          trong modal.
         </p>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => void loadTable()} disabled={loading}>
@@ -222,7 +216,12 @@ export default function AcademicPage() {
           <h2 className="text-base font-semibold text-gray-800 dark:text-white/90">
             Cố vấn học tập của tôi
           </h2>
-          <Button size="sm" variant="outline" onClick={() => void loadMyAdvisor()} disabled={advisorLoading}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void loadMyAdvisor()}
+            disabled={advisorLoading}
+          >
             {advisorLoading ? 'Đang tải...' : 'Làm mới'}
           </Button>
         </div>
@@ -350,7 +349,8 @@ export default function AcademicPage() {
       >
         <h3 className="mb-4 text-lg font-semibold">Nộp / cập nhật dữ liệu học tập</h3>
         <p className="mb-4 text-xs text-gray-500">
-          API <code>POST /academic/submit</code> — upsert theo học kỳ. Các trường số là tùy chọn ngoài học kỳ.
+          API <code>POST /academic/submit</code> — upsert theo học kỳ. Các trường số là tùy chọn
+          ngoài học kỳ.
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -365,35 +365,76 @@ export default function AcademicPage() {
           </div>
           <div>
             <Label htmlFor="gpa-prev">GPA kỳ trước (0–4)</Label>
-            <InputField id="gpa-prev" value={gpaPrev} onChange={e => setGpaPrev(e.target.value)} disabled={saving} />
+            <InputField
+              id="gpa-prev"
+              value={gpaPrev}
+              onChange={e => setGpaPrev(e.target.value)}
+              disabled={saving}
+            />
           </div>
           <div>
             <Label htmlFor="gpa-cur">GPA hiện tại (0–4)</Label>
-            <InputField id="gpa-cur" value={gpaCur} onChange={e => setGpaCur(e.target.value)} disabled={saving} />
+            <InputField
+              id="gpa-cur"
+              value={gpaCur}
+              onChange={e => setGpaCur(e.target.value)}
+              disabled={saving}
+            />
           </div>
           <div>
             <Label htmlFor="failed">Số môn trượt</Label>
-            <InputField id="failed" value={numFailed} onChange={e => setNumFailed(e.target.value)} disabled={saving} />
+            <InputField
+              id="failed"
+              value={numFailed}
+              onChange={e => setNumFailed(e.target.value)}
+              disabled={saving}
+            />
           </div>
           <div>
             <Label htmlFor="att">Tỉ lệ tham dự (0–1)</Label>
-            <InputField id="att" value={attendance} onChange={e => setAttendance(e.target.value)} disabled={saving} placeholder="VD: 0.92" />
+            <InputField
+              id="att"
+              value={attendance}
+              onChange={e => setAttendance(e.target.value)}
+              disabled={saving}
+              placeholder="VD: 0.92"
+            />
           </div>
           <div>
             <Label htmlFor="sh">Tham gia SHCVHT (số nguyên ≥0)</Label>
-            <InputField id="sh" value={shcvht} onChange={e => setShcvht(e.target.value)} disabled={saving} />
+            <InputField
+              id="sh"
+              value={shcvht}
+              onChange={e => setShcvht(e.target.value)}
+              disabled={saving}
+            />
           </div>
           <div>
             <Label htmlFor="hrs">Giờ tự học (≥0)</Label>
-            <InputField id="hrs" value={studyHours} onChange={e => setStudyHours(e.target.value)} disabled={saving} />
+            <InputField
+              id="hrs"
+              value={studyHours}
+              onChange={e => setStudyHours(e.target.value)}
+              disabled={saving}
+            />
           </div>
           <div>
             <Label htmlFor="mot">Động lực (1–5)</Label>
-            <InputField id="mot" value={motivation} onChange={e => setMotivation(e.target.value)} disabled={saving} />
+            <InputField
+              id="mot"
+              value={motivation}
+              onChange={e => setMotivation(e.target.value)}
+              disabled={saving}
+            />
           </div>
           <div>
             <Label htmlFor="str">Mức stress (1–5)</Label>
-            <InputField id="str" value={stress} onChange={e => setStress(e.target.value)} disabled={saving} />
+            <InputField
+              id="str"
+              value={stress}
+              onChange={e => setStress(e.target.value)}
+              disabled={saving}
+            />
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">

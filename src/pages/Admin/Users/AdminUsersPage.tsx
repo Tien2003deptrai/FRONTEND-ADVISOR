@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import axios from 'axios'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -9,13 +8,7 @@ import Button from '@/components/ui/button/Button'
 import Label from '@/components/form/Label'
 import InputField from '@/components/form/input/InputField'
 import Select from '@/components/form/Select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { userService } from '@/services/UserService'
 import { masterDataService } from '@/services/MasterDataService'
 import useAuthStore from '@/stores/authStore'
@@ -54,13 +47,6 @@ type ListUser = {
   }
   student_info?: { student_code?: string }
   advisor_info?: { staff_code?: string; title?: string }
-}
-
-function formatAxiosMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    return (err.response?.data as { message?: string })?.message ?? err.message
-  }
-  return 'Đã có lỗi xảy ra'
 }
 
 function normalizeRefId(raw: unknown): string {
@@ -109,8 +95,8 @@ export default function AdminUsersPage() {
       const data = res.data as { items: ListUser[]; pagination: Pagination }
       setRows(data.items ?? [])
       setPagination(data.pagination ?? null)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setLoading(false)
     }
@@ -129,8 +115,8 @@ export default function AdminUsersPage() {
       const resDept = await masterDataService.getDepartmentsList({ page: 1, limit: 100 })
       const d = resDept.data as { items: DepartmentItem[] }
       setDeptPicklist(d.items ?? [])
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     }
   }
 
@@ -146,6 +132,7 @@ export default function AdminUsersPage() {
       const md = rm.data as { items: MajorItem[] }
       setMajorPicklist(md.items ?? [])
     } catch {
+      toast.error('Đã có lỗi xảy ra')
       setMajorPicklist([])
     }
   }
@@ -208,8 +195,8 @@ export default function AdminUsersPage() {
       toast.success(res.message || 'Tạo tài khoản thành công')
       setCreateOpen(false)
       void loadList()
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setSaving(false)
     }
@@ -269,10 +256,14 @@ export default function AdminUsersPage() {
 
       <div className="mb-6 rounded-lg border border-brand-200 bg-brand-50/80 p-4 text-sm dark:border-brand-900 dark:bg-brand-950/30">
         <p className="text-gray-800 dark:text-white/90">
-          Tạo <strong>cố vấn</strong> và <strong>sinh viên</strong> phải kèm <strong>cùng lúc</strong>{' '}
-          <code className="text-xs">org.department_id</code> và <code className="text-xs">org.major_id</code>{' '}
-          để sau này tạo lớp cố vấn không bị lỗi. Khi xong, chuyển tới{' '}
-          <Link to="/advisor-classes" className="font-medium text-brand-600 underline dark:text-brand-400">
+          Tạo <strong>cố vấn</strong> và <strong>sinh viên</strong> phải kèm{' '}
+          <strong>cùng lúc</strong> <code className="text-xs">org.department_id</code> và{' '}
+          <code className="text-xs">org.major_id</code> để sau này tạo lớp cố vấn không bị lỗi. Khi
+          xong, chuyển tới{' '}
+          <Link
+            to="/advisor-classes"
+            className="font-medium text-brand-600 underline dark:text-brand-400"
+          >
             Lớp & thành viên
           </Link>
           .
@@ -346,10 +337,7 @@ export default function AdminUsersPage() {
                 <TableBody>
                   {rows.length === 0 ? (
                     <TableRow>
-                      <td
-                        className="px-3 py-6 text-gray-500"
-                        colSpan={tab === 'student' ? 5 : 4}
-                      >
+                      <td className="px-3 py-6 text-gray-500" colSpan={tab === 'student' ? 5 : 4}>
                         Chưa có dữ liệu.
                       </td>
                     </TableRow>
@@ -532,7 +520,12 @@ export default function AdminUsersPage() {
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={saving} onClick={() => setCreateOpen(false)}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={saving}
+            onClick={() => setCreateOpen(false)}
+          >
             Hủy
           </Button>
           <Button size="sm" disabled={saving} onClick={() => void submitCreate()}>

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -9,13 +8,7 @@ import Label from '@/components/form/Label'
 import InputField from '@/components/form/input/InputField'
 import Select from '@/components/form/Select'
 import MultiSelect from '@/components/form/MultiSelect'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { advisorClassService } from '@/services/AdvisorClassService'
 import { classMemberService } from '@/services/ClassMemberService'
 import { userService } from '@/services/UserService'
@@ -79,17 +72,6 @@ type MemberRow = {
     profile?: { full_name?: string }
     student_info?: { student_code?: string }
   } | null
-}
-
-function formatAxiosMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    return (err.response?.data as { message?: string })?.message ?? err.message
-  }
-  return 'Đã có lỗi xảy ra'
-}
-
-function isNotFound(err: unknown): boolean {
-  return axios.isAxiosError(err) && err.response?.status === 404
 }
 
 const MAJOR_NONE = '__none__'
@@ -160,8 +142,8 @@ export default function AdvisorClassPage() {
       const res = await userService.getUsers({ role: 'ADVISOR', limit: 100, page: 1 })
       const data = res.data as { items?: UserItem[] }
       setAdvisors(data.items ?? [])
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     }
   }, [isAdmin])
 
@@ -178,9 +160,8 @@ export default function AdvisorClassPage() {
     try {
       const res = await advisorClassService.getMyAdvisorClasses({ advisor_user_id: advisorId })
       setAdvisorClass(res.data as AdvisorClassDoc)
-    } catch (e) {
-      if (isNotFound(e)) setAdvisorClass(null)
-      else toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setLoadingClass(false)
     }
@@ -191,9 +172,8 @@ export default function AdvisorClassPage() {
     try {
       const res = await advisorClassService.getMyAdvisorClasses({})
       setAdvisorClass(res.data as AdvisorClassDoc)
-    } catch (e) {
-      if (isNotFound(e)) setAdvisorClass(null)
-      else toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setLoadingClass(false)
     }
@@ -222,19 +202,22 @@ export default function AdvisorClassPage() {
       const resDept = await masterDataService.getDepartmentsList({ page: 1, limit: 100 })
       const d = resDept.data as { items: DepartmentItem[] }
       setDeptPicklist(d.items ?? [])
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       return
     }
 
     if (advisorClass) {
       setUpClassCode(advisorClass.class_code ?? '')
       setUpClassName(advisorClass.class_name ?? '')
-      const deptLocked = isAdmin && advisorOrgDeptId ? advisorOrgDeptId : String(advisorClass.department_id ?? '')
+      const deptLocked =
+        isAdmin && advisorOrgDeptId ? advisorOrgDeptId : String(advisorClass.department_id ?? '')
       setUpDeptId(deptLocked)
       setUpMajorId(advisorClass.major_id ? String(advisorClass.major_id) : MAJOR_NONE)
       setUpCohortYear(advisorClass.cohort_year != null ? String(advisorClass.cohort_year) : '')
-      setUpStatus((advisorClass.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE') as 'ACTIVE' | 'INACTIVE')
+      setUpStatus(
+        (advisorClass.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE') as 'ACTIVE' | 'INACTIVE'
+      )
       if (advisorClass.department_id) {
         try {
           const rm = await masterDataService.getMajorsList({
@@ -336,8 +319,8 @@ export default function AdvisorClassPage() {
       setUpsertOpen(false)
       if (isAdmin && selectedAdvisorId) await fetchClassForAdvisor(selectedAdvisorId)
       else if (isAdvisor) await fetchOwnClass()
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setSavingClass(false)
     }
@@ -357,8 +340,8 @@ export default function AdvisorClassPage() {
       const data = res.data as { items: MemberRow[]; pagination: Pagination }
       setMembers(data.items ?? [])
       setMemberPagination(data.pagination ?? null)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setLoadingMembers(false)
     }
@@ -394,8 +377,8 @@ export default function AdvisorClassPage() {
         }))
       )
       setAddMembersOpen(true)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setLoadingLists(false)
     }
@@ -416,8 +399,8 @@ export default function AdvisorClassPage() {
       setAddMembersOpen(false)
       setSelectedStudentIds([])
       void loadMembers()
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     } finally {
       setSavingMembers(false)
     }
@@ -503,7 +486,9 @@ export default function AdvisorClassPage() {
                   defaultValue={selectedAdvisorId}
                 />
                 {selectedAdvisorId && !advisorOrgDeptId ? (
-                  <p className="mt-2 text-sm text-error-500 dark:text-error-400">{ADVISOR_NO_DEPT_MSG}</p>
+                  <p className="mt-2 text-sm text-error-500 dark:text-error-400">
+                    {ADVISOR_NO_DEPT_MSG}
+                  </p>
                 ) : null}
               </div>
             )}
@@ -692,11 +677,17 @@ export default function AdvisorClassPage() {
                 ['Cố vấn (user)', String(advisorClass.advisor_user_id)],
                 ['department_id', String(advisorClass.department_id ?? '—')],
                 ['major_id', advisorClass.major_id ? String(advisorClass.major_id) : '—'],
-                ['Khóa/cohort', advisorClass.cohort_year != null ? String(advisorClass.cohort_year) : '—'],
+                [
+                  'Khóa/cohort',
+                  advisorClass.cohort_year != null ? String(advisorClass.cohort_year) : '—',
+                ],
                 ['Trạng thái', advisorClass.status ?? '—'],
               ] as [string, string][]
             ).map(([k, v]) => (
-              <div key={k} className="flex gap-2 border-b border-gray-100 pb-2 dark:border-gray-800">
+              <div
+                key={k}
+                className="flex gap-2 border-b border-gray-100 pb-2 dark:border-gray-800"
+              >
                 <dt className="w-32 shrink-0 font-medium text-gray-500">{k}</dt>
                 <dd className="break-all text-gray-800 dark:text-white/90">{v}</dd>
               </div>
@@ -743,9 +734,7 @@ export default function AdvisorClassPage() {
               <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
                 {(() => {
                   const d = deptPicklist.find(x => String(x._id) === String(advisorOrgDeptId))
-                  return d
-                    ? `${d.department_code} — ${d.department_name}`
-                    : advisorOrgDeptId
+                  return d ? `${d.department_code} — ${d.department_name}` : advisorOrgDeptId
                 })()}
                 <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                   (khóa theo hồ sơ cố vấn — trùng backend)
@@ -796,7 +785,12 @@ export default function AdvisorClassPage() {
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={savingClass} onClick={() => setUpsertOpen(false)}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={savingClass}
+            onClick={() => setUpsertOpen(false)}
+          >
             Hủy
           </Button>
           <Button size="sm" disabled={savingClass} onClick={() => void submitUpsert()}>
@@ -812,8 +806,8 @@ export default function AdvisorClassPage() {
       >
         <h3 className="mb-4 text-lg font-semibold">Thêm sinh viên vào lớp</h3>
         <p className="mb-3 text-xs text-gray-500">
-          Chỉ sinh viên đúng khoa (và ngành nếu lớp có ngành) mới được backend chấp nhận. Danh
-          sách đã lọc sơ theo khoa của lớp.
+          Chỉ sinh viên đúng khoa (và ngành nếu lớp có ngành) mới được backend chấp nhận. Danh sách
+          đã lọc sơ theo khoa của lớp.
         </p>
         {loadingLists ? (
           <p className="text-sm text-gray-500">Đang tải danh sách sinh viên...</p>
@@ -828,7 +822,12 @@ export default function AdvisorClassPage() {
           />
         )}
         <div className="mt-6 flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={savingMembers} onClick={() => setAddMembersOpen(false)}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={savingMembers}
+            onClick={() => setAddMembersOpen(false)}
+          >
             Hủy
           </Button>
           <Button size="sm" disabled={savingMembers} onClick={() => void submitAddMembers()}>

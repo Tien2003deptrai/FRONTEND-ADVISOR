@@ -6,15 +6,8 @@ import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import Button from '@/components/ui/button/Button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { dashboardService } from '@/services/DashboardService'
-import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type AcademicRow = {
   term_id?: string | { _id?: string }
@@ -52,8 +45,8 @@ export default function DashboardPage() {
         risk_threshold: 0.7,
       })
       setData(res.data as StudentDashboardData)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       setData(null)
     } finally {
       setLoading(false)
@@ -66,8 +59,7 @@ export default function DashboardPage() {
 
   const gpaChart = useMemo(() => {
     const rows = [...(data?.academic_trend ?? [])].sort(
-      (a, b) =>
-        new Date(a.recorded_at ?? 0).getTime() - new Date(b.recorded_at ?? 0).getTime()
+      (a, b) => new Date(a.recorded_at ?? 0).getTime() - new Date(b.recorded_at ?? 0).getTime()
     )
     const categories = rows.map((r, i) =>
       r.recorded_at ? new Date(r.recorded_at).toLocaleDateString('vi-VN') : `#${i + 1}`
@@ -97,14 +89,14 @@ export default function DashboardPage() {
 
   const sentimentChart = useMemo(() => {
     const raw = data?.sentiment_trend ?? []
-    const months = Array.from(new Set(raw.map(r => r._id?.month).filter(Boolean))).sort() as string[]
+    const months = Array.from(
+      new Set(raw.map(r => r._id?.month).filter(Boolean))
+    ).sort() as string[]
     const labels = ['POSITIVE', 'NEUTRAL', 'NEGATIVE']
     const series = labels.map(lab => ({
       name: lab,
       data: months.map(m => {
-        const row = raw.find(
-          r => r._id?.month === m && r._id?.sentiment_label === lab
-        )
+        const row = raw.find(r => r._id?.month === m && r._id?.sentiment_label === lab)
         return row ? row.count : 0
       }),
     }))
@@ -128,8 +120,8 @@ export default function DashboardPage() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Dữ liệu từ <code className="text-xs">POST /dashboard/student</code>. Chi tiết nộp học tập / phản hồi / thông báo
-          xem các mục menu tương ứng.
+          Dữ liệu từ <code className="text-xs">POST /dashboard/student</code>. Chi tiết nộp học tập
+          / phản hồi / thông báo xem các mục menu tương ứng.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
@@ -267,12 +259,8 @@ export default function DashboardPage() {
                               ? new Date(row.recorded_at).toLocaleString('vi-VN')
                               : '—'}
                           </TableCell>
-                          <TableCell className="px-3 py-2">
-                            {row.gpa_current ?? '—'}
-                          </TableCell>
-                          <TableCell className="px-3 py-2">
-                            {row.gpa_prev_sem ?? '—'}
-                          </TableCell>
+                          <TableCell className="px-3 py-2">{row.gpa_current ?? '—'}</TableCell>
+                          <TableCell className="px-3 py-2">{row.gpa_prev_sem ?? '—'}</TableCell>
                           <TableCell className="px-3 py-2">
                             {row.attendance_rate != null
                               ? `${(Number(row.attendance_rate) * 100).toFixed(0)}%`
@@ -280,9 +268,7 @@ export default function DashboardPage() {
                           </TableCell>
                           <TableCell className="px-3 py-2">{row.num_failed ?? '—'}</TableCell>
                           <TableCell className="px-3 py-2">
-                            {row.sentiment_score != null
-                              ? row.sentiment_score.toFixed(2)
-                              : '—'}
+                            {row.sentiment_score != null ? row.sentiment_score.toFixed(2) : '—'}
                           </TableCell>
                         </TableRow>
                       ))

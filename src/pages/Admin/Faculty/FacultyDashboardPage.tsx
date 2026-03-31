@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import axios from 'axios'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -7,13 +6,7 @@ import Button from '@/components/ui/button/Button'
 import Label from '@/components/form/Label'
 import InputField from '@/components/form/input/InputField'
 import Select from '@/components/form/Select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { dashboardService } from '@/services/DashboardService'
 import { masterDataService } from '@/services/MasterDataService'
 import useAuthStore from '@/stores/authStore'
@@ -42,13 +35,6 @@ type FacultyDashboardData = {
   anomaly_summary: AnomalyRow[]
 }
 
-function formatAxiosMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    return (err.response?.data as { message?: string })?.message ?? err.message
-  }
-  return 'Đã có lỗi xảy ra'
-}
-
 export default function FacultyDashboardPage() {
   const user = useAuthStore(s => s.user)
   const canAccess = user?.role === 'ADMIN' || user?.role === 'FACULTY'
@@ -67,8 +53,8 @@ export default function FacultyDashboardPage() {
       const res = await masterDataService.getDepartmentsList({ page: 1, limit: 200 })
       const d = res.data as { items: DepartmentItem[] }
       setDeptPicklist(d.items ?? [])
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
     }
   }, [])
 
@@ -85,8 +71,8 @@ export default function FacultyDashboardPage() {
       if (deptChoice && deptChoice !== '__all__') body.department_id = deptChoice
       const res = await dashboardService.getFacultyDashboard(body)
       setData(res.data as FacultyDashboardData)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       setData(null)
     } finally {
       setLoading(false)
@@ -115,8 +101,8 @@ export default function FacultyDashboardPage() {
         <PageMeta title="Dashboard đơn vị | Advisor" description="FACULTY / ADMIN" />
         <PageBreadcrumb pageTitle="Dashboard đơn vị (Faculty)" />
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Chỉ vai trò <strong>FACULTY</strong> hoặc <strong>ADMIN</strong> mới xem được dashboard này (
-          <code className="text-xs">POST /api/dashboard/faculty</code>).
+          Chỉ vai trò <strong>FACULTY</strong> hoặc <strong>ADMIN</strong> mới xem được dashboard
+          này (<code className="text-xs">POST /api/dashboard/faculty</code>).
         </p>
       </>
     )
@@ -179,9 +165,7 @@ export default function FacultyDashboardPage() {
               </p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Điểm rủi ro TB
-              </p>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Điểm rủi ro TB</p>
               <p className="mt-1 text-2xl font-semibold text-gray-800 dark:text-white/90">
                 {Number(kpi.avg_risk_score).toFixed(4)}
               </p>
@@ -193,7 +177,9 @@ export default function FacultyDashboardPage() {
               </p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Dự báo (latest)</p>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Dự báo (latest)
+              </p>
               <p className="mt-1 text-2xl font-semibold text-gray-800 dark:text-white/90">
                 {kpi.total_predictions}
               </p>
@@ -271,12 +257,8 @@ export default function FacultyDashboardPage() {
                         key={`${row._id?.status}-${row._id?.severity}-${i}`}
                         className="border-b border-gray-100 dark:border-gray-800"
                       >
-                        <TableCell className="px-3 py-2">
-                          {row._id?.status ?? '—'}
-                        </TableCell>
-                        <TableCell className="px-3 py-2">
-                          {row._id?.severity ?? '—'}
-                        </TableCell>
+                        <TableCell className="px-3 py-2">{row._id?.status ?? '—'}</TableCell>
+                        <TableCell className="px-3 py-2">{row._id?.severity ?? '—'}</TableCell>
                         <TableCell className="px-3 py-2">{row.count}</TableCell>
                       </TableRow>
                     ))

@@ -47,9 +47,7 @@ const othersNav: NavItem[] = [
   {
     icon: <UserIcon />,
     name: 'Tài khoản',
-    subItems: [
-      { name: 'Hồ sơ', path: '/student/profile' },
-    ],
+    subItems: [{ name: 'Hồ sơ', path: '/student/profile' }],
   },
 ]
 
@@ -99,9 +97,7 @@ const AppSidebarStudent: React.FC = () => {
   }, [openSubmenu])
 
   const handleSubmenuToggle = (index: number) => {
-    setOpenSubmenu(prev =>
-      prev && prev.index === index ? null : { type: 'others', index }
-    )
+    setOpenSubmenu(prev => (prev && prev.index === index ? null : { type: 'others', index }))
   }
 
   const handleSignOut = () => {
@@ -113,23 +109,21 @@ const AppSidebarStudent: React.FC = () => {
     <ul className="flex flex-col gap-4">
       {items.map(nav => (
         <li key={nav.name}>
-          {nav.path
-            ? (
-                <Link
-                  to={nav.path}
-                  className={`menu-item group ${isActive(nav.path) ? 'menu-item-active' : 'menu-item-inactive'}`}
-                >
-                  <span
-                    className={`menu-item-icon-size ${isActive(nav.path) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}`}
-                  >
-                    {nav.icon}
-                  </span>
-                  {(isExpanded || isHovered || isMobileOpen) && (
-                    <span className="menu-item-text">{nav.name}</span>
-                  )}
-                </Link>
-              )
-            : null}
+          {nav.path ? (
+            <Link
+              to={nav.path}
+              className={`menu-item group ${isActive(nav.path) ? 'menu-item-active' : 'menu-item-inactive'}`}
+            >
+              <span
+                className={`menu-item-icon-size ${isActive(nav.path) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}`}
+              >
+                {nav.icon}
+              </span>
+              {(isExpanded || isHovered || isMobileOpen) && (
+                <span className="menu-item-text">{nav.name}</span>
+              )}
+            </Link>
+          ) : null}
         </li>
       ))}
     </ul>
@@ -209,7 +203,13 @@ const AppSidebarStudent: React.FC = () => {
         <Link to="/student">
           {isExpanded || isHovered || isMobileOpen ? (
             <div className="flex items-center gap-3">
-              <img className="dark:hidden" src="/images/logo/logo-icon.svg" alt="" width={40} height={40} />
+              <img
+                className="dark:hidden"
+                src="/images/logo/logo-icon.svg"
+                alt=""
+                width={40}
+                height={40}
+              />
               <span className="text-xl font-semibold text-blue-600">Advisor — SV</span>
             </div>
           ) : (
@@ -224,7 +224,11 @@ const AppSidebarStudent: React.FC = () => {
               <h2
                 className={`mb-4 flex text-xs uppercase leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}
               >
-                {isExpanded || isHovered || isMobileOpen ? 'Sinh viên' : <HorizontaLDots className="size-6" />}
+                {isExpanded || isHovered || isMobileOpen ? (
+                  'Sinh viên'
+                ) : (
+                  <HorizontaLDots className="size-6" />
+                )}
               </h2>
               {renderMain(mainNav)}
             </div>

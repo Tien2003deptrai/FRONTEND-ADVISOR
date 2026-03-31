@@ -8,19 +8,14 @@ import NotFound from './pages/OtherPage/NotFound'
 import UserProfiles from './pages/UserProfiles'
 // Admin Pages
 import {
-    MasterDataPage,
-    AdvisorClassPage,
-    AdminUsersPage,
-    FacultyDashboardPage,
-    FeedbackListPage,
-    Home
+  MasterDataPage,
+  AdvisorClassPage,
+  AdminUsersPage,
+  FacultyDashboardPage,
+  FeedbackListPage,
+  Home,
 } from './pages/Admin'
-import {
-    DashboardPage,
-    AcademicPage,
-    FeedbackPage,
-    NotificationsPage
-} from './pages/Student'
+import { DashboardPage, AcademicPage, FeedbackPage, NotificationsPage } from './pages/Student'
 import FormElements from './pages/Forms/FormElements'
 import AppLayout from './layout/AppLayout'
 import ProtectLayout from './layout/ProtectLayout'

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import axios from 'axios'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -8,13 +7,7 @@ import Button from '@/components/ui/button/Button'
 import Label from '@/components/form/Label'
 import InputField from '@/components/form/input/InputField'
 import Select from '@/components/form/Select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { feedbackService } from '@/services/FeedbackService'
 
 type Pagination = {
@@ -35,13 +28,6 @@ type FeedbackRow = {
   sentiment_label?: string
   feedback_score?: number
   submitted_at?: string
-}
-
-function formatAxiosMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    return (err.response?.data as { message?: string })?.message ?? err.message
-  }
-  return 'Đã có lỗi xảy ra'
 }
 
 function formatDate(iso?: string): string {
@@ -95,8 +81,8 @@ export default function FeedbackListPage() {
       const payload = res.data as { items: FeedbackRow[]; pagination: Pagination }
       setRows(payload.items ?? [])
       setPagination(payload.pagination ?? null)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       setRows([])
       setPagination(null)
     } finally {
@@ -230,9 +216,7 @@ export default function FeedbackListPage() {
                       <TableCell className="max-w-[140px] whitespace-nowrap px-3 py-2 text-xs">
                         {formatDate(row.submitted_at)}
                       </TableCell>
-                      <TableCell className="px-3 py-2">
-                        {row.sentiment_label ?? '—'}
-                      </TableCell>
+                      <TableCell className="px-3 py-2">{row.sentiment_label ?? '—'}</TableCell>
                       <TableCell className="px-3 py-2">
                         {row.rating != null ? row.rating : '—'}
                       </TableCell>
@@ -313,9 +297,7 @@ export default function FeedbackListPage() {
               <dt className="font-medium text-gray-500">Cảm xúc / điểm</dt>
               <dd>
                 {detailRow.sentiment_label ?? '—'}
-                {detailRow.feedback_score != null
-                  ? ` (score: ${detailRow.feedback_score})`
-                  : ''}
+                {detailRow.feedback_score != null ? ` (score: ${detailRow.feedback_score})` : ''}
               </dd>
             </div>
             <div>

@@ -4,15 +4,8 @@ import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { Modal } from '@/components/ui/modal'
 import Button from '@/components/ui/button/Button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { notificationService } from '@/services/NotificationService'
-import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type Pagination = {
   page: number
@@ -47,8 +40,8 @@ export default function NotificationsPage() {
       const payload = res.data as { items: NotificationRow[]; pagination: Pagination }
       setRows(payload.items ?? [])
       setPagination(payload.pagination ?? null)
-    } catch (e) {
-      toast.error(formatAxiosMessage(e))
+    } catch {
+      toast.error('Đã có lỗi xảy ra')
       setRows([])
       setPagination(null)
     } finally {
@@ -109,12 +102,17 @@ export default function NotificationsPage() {
                   </TableRow>
                 ) : (
                   rows.map(row => (
-                    <TableRow key={row._id} className="border-b border-gray-100 dark:border-gray-800">
+                    <TableRow
+                      key={row._id}
+                      className="border-b border-gray-100 dark:border-gray-800"
+                    >
                       <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
                         {row.sent_at ? new Date(row.sent_at).toLocaleString('vi-VN') : '—'}
                       </TableCell>
                       <TableCell className="px-3 py-2">{row.type ?? '—'}</TableCell>
-                      <TableCell className="max-w-xs truncate px-3 py-2">{row.title ?? '—'}</TableCell>
+                      <TableCell className="max-w-xs truncate px-3 py-2">
+                        {row.title ?? '—'}
+                      </TableCell>
                       <TableCell className="px-3 py-2">{row.is_read ? 'Có' : 'Chưa'}</TableCell>
                       <TableCell className="px-3 py-2">
                         <Button size="sm" variant="outline" onClick={() => openDetail(row)}>

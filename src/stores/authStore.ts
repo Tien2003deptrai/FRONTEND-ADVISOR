@@ -1,38 +1,36 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
 type AuthState = {
-    isAuthenticated: boolean;
-    user: User | null;
-    token: string | null;
-    refreshToken: string | null;
-    login: (user: User, accessToken: string, refreshToken?: string | null) => void;
-    logout: () => void;
-};
+  isAuthenticated: boolean
+  user: User | null
+  token: string | null
+  refreshToken: string | null
+  login: (user: User, accessToken: string, refreshToken?: string | null) => void
+  logout: () => void
+}
 
 const useAuthStore = create<AuthState>()(
-    persist<AuthState>(
-        (set) => ({
-            isAuthenticated: false,
-            user: null,
-            token: null,
-            refreshToken: null,
-            login: (user, accessToken, refreshToken) =>
-                set({
-                    isAuthenticated: true,
-                    user,
-                    token: accessToken,
-                    refreshToken: refreshToken ?? null,
-                }),
-            logout: () =>
-                set({ isAuthenticated: false, user: null, token: null, refreshToken: null }),
+  persist<AuthState>(
+    set => ({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      refreshToken: null,
+      login: (user, accessToken, refreshToken) =>
+        set({
+          isAuthenticated: true,
+          user,
+          token: accessToken,
+          refreshToken: refreshToken ?? null,
         }),
-        {
-            name: 'auth',
-            storage: createJSONStorage(() => sessionStorage),
-        }
-    )
-);
+      logout: () => set({ isAuthenticated: false, user: null, token: null, refreshToken: null }),
+    }),
+    {
+      name: 'auth',
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+)
 
-export default useAuthStore;
+export default useAuthStore
