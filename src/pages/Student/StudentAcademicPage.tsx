@@ -17,6 +17,7 @@ import {
 import { academicService } from '../../services/AcademicService'
 import { dashboardService } from '../../services/DashboardService'
 import { masterDataService } from '../../services/MasterDataService'
+import { studentService } from '../../services/StudentService'
 import { formatAxiosMessage } from '../../utils/formatAxiosMessage'
 
 type AcademicRow = {
@@ -34,6 +35,22 @@ type AcademicRow = {
 }
 
 type TermItem = { _id: string; term_code: string; term_name: string }
+type MyAdvisorData = {
+  advisor?: {
+    _id?: string
+    email?: string
+    profile?: { full_name?: string }
+    advisor_info?: { staff_code?: string; title?: string }
+  } | null
+  advisor_class?: {
+    _id?: string
+    class_code?: string
+    class_name?: string
+    department_id?: string
+    major_id?: string
+    status?: string
+  } | null
+}
 
 function termIdOf(row: AcademicRow): string {
   const t = row.term_id
@@ -45,6 +62,8 @@ function termIdOf(row: AcademicRow): string {
 export default function StudentAcademicPage() {
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<AcademicRow[]>([])
+  const [advisorLoading, setAdvisorLoading] = useState(false)
+  const [advisorData, setAdvisorData] = useState<MyAdvisorData | null>(null)
   const [terms, setTerms] = useState<TermItem[]>([])
   const [defaultTermId, setDefaultTermId] = useState('')
 
@@ -90,10 +109,24 @@ export default function StudentAcademicPage() {
     }
   }, [])
 
+  const loadMyAdvisor = useCallback(async () => {
+    setAdvisorLoading(true)
+    try {
+      const res = await studentService.getMyAdvisor()
+      setAdvisorData((res.data as MyAdvisorData) ?? null)
+    } catch (e) {
+      toast.error(formatAxiosMessage(e))
+      setAdvisorData(null)
+    } finally {
+      setAdvisorLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     void loadTable()
     void loadTerms()
-  }, [loadTable, loadTerms])
+    void loadMyAdvisor()
+  }, [loadTable, loadTerms, loadMyAdvisor])
 
   const openModal = () => {
     setTermId(defaultTermId || terms[0]?._id || '')
@@ -182,6 +215,54 @@ export default function StudentAcademicPage() {
             Nộp / cập nhật
           </Button>
         </div>
+      </div>
+
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="text-base font-semibold text-gray-800 dark:text-white/90">
+            Cố vấn học tập của tôi
+          </h2>
+          <Button size="sm" variant="outline" onClick={() => void loadMyAdvisor()} disabled={advisorLoading}>
+            {advisorLoading ? 'Đang tải...' : 'Làm mới'}
+          </Button>
+        </div>
+        {!advisorData?.advisor ? (
+          <p className="text-sm text-gray-500">
+            Chưa có thông tin cố vấn học tập. Vui lòng liên hệ quản trị để gán lớp/cố vấn.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+              <p className="text-xs text-gray-500">Họ tên cố vấn</p>
+              <p className="font-medium text-gray-800 dark:text-white/90">
+                {advisorData.advisor.profile?.full_name || '—'}
+              </p>
+              <p className="mt-2 text-xs text-gray-500">Email</p>
+              <p className="text-sm">{advisorData.advisor.email || '—'}</p>
+              <p className="mt-2 text-xs text-gray-500">Mã CB / Chức danh</p>
+              <p className="text-sm">
+                {advisorData.advisor.advisor_info?.staff_code || '—'} /{' '}
+                {advisorData.advisor.advisor_info?.title || '—'}
+              </p>
+            </div>
+            <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+              <p className="text-xs text-gray-500">Lớp cố vấn</p>
+              <p className="font-medium text-gray-800 dark:text-white/90">
+                {advisorData.advisor_class?.class_code || '—'}{' '}
+                {advisorData.advisor_class?.class_name
+                  ? `— ${advisorData.advisor_class.class_name}`
+                  : ''}
+              </p>
+              <p className="mt-2 text-xs text-gray-500">department_id / major_id</p>
+              <p className="break-all text-sm">
+                {advisorData.advisor_class?.department_id || '—'} /{' '}
+                {advisorData.advisor_class?.major_id || '—'}
+              </p>
+              <p className="mt-2 text-xs text-gray-500">Trạng thái lớp</p>
+              <p className="text-sm">{advisorData.advisor_class?.status || '—'}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">

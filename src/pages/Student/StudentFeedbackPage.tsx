@@ -5,7 +5,6 @@ import PageBreadcrumb from '../../components/common/PageBreadCrumb'
 import { Modal } from '../../components/ui/modal'
 import Button from '../../components/ui/button/Button'
 import Label from '../../components/form/Label'
-import InputField from '../../components/form/input/InputField'
 import Select from '../../components/form/Select'
 import TextArea from '../../components/form/input/TextArea'
 import {
@@ -16,6 +15,7 @@ import {
   TableRow,
 } from '../../components/ui/table'
 import { feedbackService } from '../../services/FeedbackService'
+import { meetingService } from '../../services/MeetingService'
 import useAuthStore from '../../stores/authStore'
 import { formatAxiosMessage } from '../../utils/formatAxiosMessage'
 
@@ -41,6 +41,10 @@ type MeetingHint = {
   meeting_id: string
   class_id: string
   advisor_user_id: string
+  class_label: string
+  advisor_label: string
+  meeting_time?: string
+  meeting_end_time?: string
   feedback_count: number
   latest_submitted_at?: string
 }
@@ -69,7 +73,7 @@ export default function StudentFeedbackPage() {
   const [saving, setSaving] = useState(false)
   const [meetingId, setMeetingId] = useState('')
   const [text, setText] = useState('')
-  const [rating, setRating] = useState('')
+  const [rating, setRating] = useState(0)
   const [sentiment, setSentiment] = useState(SENTIMENT_SKIP)
 
   const normalizeRefId = (v: unknown): string => {
@@ -107,45 +111,111 @@ export default function StudentFeedbackPage() {
   const loadMeetingHints = useCallback(async () => {
     if (!userId) return
     try {
-      const res = await feedbackService.listFeedback({
-        page: 1,
-        limit: 200,
-        student_user_id: userId,
-      })
-      const payload = res.data as { items?: FeedbackRow[] }
-      const map = new Map<string, MeetingHint>()
-      for (const row of payload.items ?? []) {
-        const meetingId = normalizeRefId(row.meeting_id)
-        if (!meetingId) continue
-        const classId = normalizeRefId(row.class_id)
-        const advisorId = normalizeRefId(row.advisor_user_id)
-        const prev = map.get(meetingId)
-        if (!prev) {
-          map.set(meetingId, {
-            meeting_id: meetingId,
-            class_id: classId,
-            advisor_user_id: advisorId,
-            feedback_count: 1,
-            latest_submitted_at: row.submitted_at,
-          })
-        } else {
-          prev.feedback_count += 1
-          if (
-            row.submitted_at &&
-            (!prev.latest_submitted_at ||
-              new Date(row.submitted_at).getTime() > new Date(prev.latest_submitted_at).getTime())
-          ) {
-            prev.latest_submitted_at = row.submitted_at
-          }
-          if (!prev.class_id && classId) prev.class_id = classId
-          if (!prev.advisor_user_id && advisorId) prev.advisor_user_id = advisorId
-        }
+      const [meetingRes, fbRes] = await Promise.all([
+        meetingService.listMyMeetings({
+          page: 1,
+          limit: 50,
+        }),
+        feedbackService.listFeedback({
+          page: 1,
+          limit: 50,
+          student_user_id: userId,
+        }),
+      ])
+
+      const meetingPayload = meetingRes.data as {
+        items?: Array<{
+          _id?: string
+          class_id?:
+            | string
+            | {
+                _id?: string
+                class_code?: string
+                class_name?: string
+              }
+          advisor_user_id?:
+            | string
+            | {
+                _id?: string
+                email?: string
+                profile?: { full_name?: string }
+                advisor_info?: { staff_code?: string; title?: string }
+              }
+          meeting_time?: string
+          meeting_end_time?: string
+        }>
       }
+      const fbPayload = fbRes.data as { items?: FeedbackRow[] }
+      const feedbackByMeeting = new Map<string, { count: number; latest?: string }>()
+      for (const fb of fbPayload.items ?? []) {
+        const mid = normalizeRefId(fb.meeting_id)
+        if (!mid) continue
+        const prev = feedbackByMeeting.get(mid) ?? { count: 0, latest: undefined }
+        prev.count += 1
+        if (
+          fb.submitted_at &&
+          (!prev.latest || new Date(fb.submitted_at).getTime() > new Date(prev.latest).getTime())
+        ) {
+          prev.latest = fb.submitted_at
+        }
+        feedbackByMeeting.set(mid, prev)
+      }
+
+      const items = (meetingPayload.items ?? []).map(m => {
+        const meetingId = normalizeRefId(m._id)
+        const fbStat = feedbackByMeeting.get(meetingId)
+        const classRaw = m.class_id
+        const advisorRaw = m.advisor_user_id
+        const classCode =
+          typeof classRaw === 'object' && classRaw !== null && 'class_code' in classRaw
+            ? String((classRaw as { class_code?: string }).class_code ?? '')
+            : ''
+        const className =
+          typeof classRaw === 'object' && classRaw !== null && 'class_name' in classRaw
+            ? String((classRaw as { class_name?: string }).class_name ?? '')
+            : ''
+        const advisorName =
+          typeof advisorRaw === 'object' && advisorRaw !== null && 'profile' in advisorRaw
+            ? String(
+                (advisorRaw as { profile?: { full_name?: string } }).profile?.full_name ?? ''
+              )
+            : ''
+        const advisorEmail =
+          typeof advisorRaw === 'object' && advisorRaw !== null && 'email' in advisorRaw
+            ? String((advisorRaw as { email?: string }).email ?? '')
+            : ''
+        const advisorStaffCode =
+          typeof advisorRaw === 'object' && advisorRaw !== null && 'advisor_info' in advisorRaw
+            ? String(
+                (advisorRaw as { advisor_info?: { staff_code?: string } }).advisor_info
+                  ?.staff_code ?? ''
+              )
+            : ''
+        return {
+          meeting_id: meetingId,
+          class_id: normalizeRefId(m.class_id),
+          advisor_user_id: normalizeRefId(m.advisor_user_id),
+          class_label:
+            [classCode, className].filter(Boolean).join(' — ') ||
+            normalizeRefId(m.class_id) ||
+            '—',
+          advisor_label:
+            [advisorName, advisorStaffCode && `(${advisorStaffCode})`, advisorEmail]
+              .filter(Boolean)
+              .join(' • ') ||
+            normalizeRefId(m.advisor_user_id) ||
+            '—',
+          meeting_time: m.meeting_time,
+          meeting_end_time: m.meeting_end_time,
+          feedback_count: fbStat?.count ?? 0,
+          latest_submitted_at: fbStat?.latest,
+        } satisfies MeetingHint
+      })
       setMeetingHints(
-        [...map.values()].sort(
+        [...items].sort(
           (a, b) =>
-            new Date(b.latest_submitted_at ?? 0).getTime() -
-            new Date(a.latest_submitted_at ?? 0).getTime()
+            new Date(b.meeting_time ?? b.latest_submitted_at ?? 0).getTime() -
+            new Date(a.meeting_time ?? a.latest_submitted_at ?? 0).getTime()
         )
       )
     } catch {
@@ -169,7 +239,7 @@ export default function StudentFeedbackPage() {
   const openCreate = () => {
     setMeetingId('')
     setText('')
-    setRating('')
+    setRating(0)
     setSentiment(SENTIMENT_SKIP)
     setCreateOpen(true)
   }
@@ -177,14 +247,14 @@ export default function StudentFeedbackPage() {
   const openCreateForMeeting = (meetingId: string) => {
     setMeetingId(meetingId)
     setText('')
-    setRating('')
+    setRating(0)
     setSentiment(SENTIMENT_SKIP)
     setCreateOpen(true)
   }
 
   const submitFeedback = async () => {
     if (!meetingId.trim()) {
-      toast.error('Nhập meeting_id (MongoId buổi SHCVHT)')
+      toast.error('Chọn meeting cần phản hồi')
       return
     }
     if (text.trim().length < 30) {
@@ -195,14 +265,7 @@ export default function StudentFeedbackPage() {
       meeting_id: meetingId.trim(),
       feedback_text: text.trim(),
     }
-    if (rating.trim()) {
-      const r = parseInt(rating, 10)
-      if (Number.isNaN(r) || r < 1 || r > 5) {
-        toast.error('rating 1–5')
-        return
-      }
-      body.rating = r
-    }
+    if (rating >= 1 && rating <= 5) body.rating = rating
     if (sentiment && sentiment !== SENTIMENT_SKIP) body.sentiment_label = sentiment
 
     setSaving(true)
@@ -219,6 +282,12 @@ export default function StudentFeedbackPage() {
       setSaving(false)
     }
   }
+
+  const meetingOptions = meetingHints.map(m => ({
+    value: m.meeting_id,
+    label: `${m.class_label} • ${m.meeting_time ? new Date(m.meeting_time).toLocaleString('vi-VN') : m.meeting_id}`,
+  }))
+  const selectedMeeting = meetingHints.find(m => m.meeting_id === meetingId)
 
   return (
     <>
@@ -240,7 +309,7 @@ export default function StudentFeedbackPage() {
           Lớp cố vấn & meeting của tôi
         </h2>
         <p className="mb-3 text-xs text-gray-500">
-          Hiện backend chưa có endpoint riêng cho STUDENT để list meeting/class. Bảng dưới suy ra từ feedback bạn đã gửi.
+          Danh sách lấy từ API <code>POST /meeting/my</code> theo tài khoản STUDENT.
         </p>
         <div className="overflow-x-auto">
           <Table className="text-left text-sm">
@@ -250,10 +319,13 @@ export default function StudentFeedbackPage() {
                   meeting_id
                 </TableCell>
                 <TableCell isHeader className="px-3 py-2 font-semibold">
-                  class_id
+                  Lớp cố vấn
                 </TableCell>
                 <TableCell isHeader className="px-3 py-2 font-semibold">
-                  advisor_user_id
+                  Cố vấn học tập
+                </TableCell>
+                <TableCell isHeader className="px-3 py-2 font-semibold">
+                  Thời gian họp
                 </TableCell>
                 <TableCell isHeader className="px-3 py-2 font-semibold">
                   Lần feedback
@@ -269,8 +341,8 @@ export default function StudentFeedbackPage() {
             <TableBody>
               {meetingHints.length === 0 ? (
                 <TableRow>
-                  <td className="px-3 py-5 text-gray-500" colSpan={6}>
-                    Chưa suy ra được meeting từ feedback lịch sử. Bạn vẫn có thể bấm «Gửi phản hồi mới» và nhập meeting_id.
+                  <td className="px-3 py-5 text-gray-500" colSpan={7}>
+                    Chưa có meeting nào cho tài khoản này.
                   </td>
                 </TableRow>
               ) : (
@@ -280,10 +352,13 @@ export default function StudentFeedbackPage() {
                       {row.meeting_id}
                     </TableCell>
                     <TableCell className="max-w-[180px] truncate px-3 py-2 font-mono text-xs">
-                      {row.class_id || '—'}
+                      {row.class_label}
                     </TableCell>
-                    <TableCell className="max-w-[180px] truncate px-3 py-2 font-mono text-xs">
-                      {row.advisor_user_id || '—'}
+                    <TableCell className="max-w-[260px] truncate px-3 py-2 text-xs">
+                      {row.advisor_label}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
+                      {row.meeting_time ? new Date(row.meeting_time).toLocaleString('vi-VN') : '—'}
                     </TableCell>
                     <TableCell className="px-3 py-2">{row.feedback_count}</TableCell>
                     <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
@@ -419,12 +494,28 @@ export default function StudentFeedbackPage() {
       >
         <h3 className="mb-2 text-lg font-semibold">Gửi phản hồi sau buổi SHCVHT</h3>
         <p className="mb-4 text-xs text-gray-500">
-          Cần <code>meeting_id</code> hợp lệ (lấy từ lịch / thông báo buổi họp). Nội dung tối thiểu 30 ký tự.
+          Chọn meeting từ danh sách của bạn rồi gửi phản hồi. Nội dung tối thiểu 30 ký tự.
         </p>
         <div className="space-y-3">
           <div>
-            <Label htmlFor="meet">meeting_id *</Label>
-            <InputField id="meet" value={meetingId} onChange={e => setMeetingId(e.target.value)} disabled={saving} />
+            <Label>Meeting *</Label>
+            <Select
+              key={`meeting-${createOpen}-${meetingHints.length}-${meetingId}`}
+              options={meetingOptions}
+              placeholder={
+                meetingOptions.length
+                  ? 'Chọn meeting'
+                  : 'Chưa có meeting trong lịch sử feedback'
+              }
+              onChange={setMeetingId}
+              defaultValue={meetingId}
+            />
+            {selectedMeeting && (
+              <p className="mt-2 text-xs text-gray-500">
+                Lớp: <code>{selectedMeeting.class_label}</code> • Cố vấn:{' '}
+                <code>{selectedMeeting.advisor_label}</code>
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="fb-text">Nội dung *</Label>
@@ -437,8 +528,34 @@ export default function StudentFeedbackPage() {
             />
           </div>
           <div>
-            <Label htmlFor="rate">Đánh giá (1–5, tùy)</Label>
-            <InputField id="rate" value={rating} onChange={e => setRating(e.target.value)} disabled={saving} />
+            <Label>Đánh giá (tùy chọn)</Label>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setRating(star)}
+                  className={`text-2xl leading-none transition-colors ${
+                    star <= rating ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'
+                  }`}
+                  aria-label={`Chọn ${star} sao`}
+                  title={`${star} sao`}
+                >
+                  ★
+                </button>
+              ))}
+              {rating > 0 && (
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setRating(0)}
+                  className="ml-2 text-xs text-gray-500 underline"
+                >
+                  Bỏ chọn
+                </button>
+              )}
+            </div>
           </div>
           <div>
             <Label>Cảm xúc (tùy)</Label>
@@ -455,7 +572,11 @@ export default function StudentFeedbackPage() {
           <Button size="sm" variant="outline" disabled={saving} onClick={() => setCreateOpen(false)}>
             Hủy
           </Button>
-          <Button size="sm" disabled={saving} onClick={() => void submitFeedback()}>
+          <Button
+            size="sm"
+            disabled={saving || meetingOptions.length === 0}
+            onClick={() => void submitFeedback()}
+          >
             {saving ? 'Đang gửi...' : 'Gửi'}
           </Button>
         </div>

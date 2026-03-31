@@ -1,6 +1,7 @@
 export * from './AuthService';
 export * from './AcademicService';
 export * from './DashboardService';
+export * from './MeetingService';
 export * from './UserService';
 export * from './StudentService';
 export * from './MasterDataService';
