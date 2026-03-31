@@ -1,22 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'sonner'
-import PageMeta from '../../components/common/PageMeta'
-import PageBreadcrumb from '../../components/common/PageBreadCrumb'
-import Button from '../../components/ui/button/Button'
-import Label from '../../components/form/Label'
-import InputField from '../../components/form/input/InputField'
-import Select from '../../components/form/Select'
+import PageMeta from '../../../components/common/PageMeta'
+import PageBreadcrumb from '../../../components/common/PageBreadCrumb'
+import Button from '../../../components/ui/button/Button'
+import Label from '../../../components/form/Label'
+import InputField from '../../../components/form/input/InputField'
+import Select from '../../../components/form/Select'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../components/ui/table'
-import { dashboardService } from '../../services/DashboardService'
-import { masterDataService } from '../../services/MasterDataService'
-import useAuthStore from '../../stores/authStore'
+} from '../../../components/ui/table'
+import { dashboardService } from '../../../services/DashboardService'
+import { masterDataService } from '../../../services/MasterDataService'
+import useAuthStore from '../../../stores/authStore'
 
 type DepartmentItem = {
   _id: string
@@ -153,9 +153,9 @@ export default function FacultyDashboardPage() {
             <InputField
               id="fd-risk"
               type="number"
-              step="0.05"
-              min={0}
-              max={1}
+              step={0.05}
+              min="0"
+              max="1"
               value={riskThreshold}
               onChange={e => setRiskThreshold(e.target.value)}
             />

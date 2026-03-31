@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'sonner'
-import PageMeta from '../../components/common/PageMeta'
-import PageBreadcrumb from '../../components/common/PageBreadCrumb'
-import { Modal } from '../../components/ui/modal'
-import Button from '../../components/ui/button/Button'
-import Label from '../../components/form/Label'
-import InputField from '../../components/form/input/InputField'
-import Select from '../../components/form/Select'
+import PageMeta from '../../../components/common/PageMeta'
+import PageBreadcrumb from '../../../components/common/PageBreadCrumb'
+import { Modal } from '../../../components/ui/modal'
+import Button from '../../../components/ui/button/Button'
+import Label from '../../../components/form/Label'
+import InputField from '../../../components/form/input/InputField'
+import Select from '../../../components/form/Select'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../components/ui/table'
-import { feedbackService } from '../../services/FeedbackService'
+} from '../../../components/ui/table'
+import { feedbackService } from '../../../services/FeedbackService'
 
 type Pagination = {
   page: number

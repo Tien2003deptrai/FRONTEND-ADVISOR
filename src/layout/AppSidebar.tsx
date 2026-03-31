@@ -36,14 +36,14 @@ const navItems: NavItem[] = [
         path: '/master-data',
     },
     {
-        icon: <ListIcon />,
-        name: 'Lớp & thành viên',
-        path: '/advisor-classes',
-    },
-    {
         name: 'Quản lý người dùng',
         icon: <UserCircleIcon />,
         subItems: [{ name: 'Cố vấn & sinh viên', path: '/admin-users', pro: false }],
+    },
+    {
+        icon: <ListIcon />,
+        name: 'Lớp & thành viên',
+        path: '/advisor-classes',
     },
 ]
 
