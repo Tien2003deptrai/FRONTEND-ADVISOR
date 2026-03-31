@@ -1,6 +1,6 @@
 import Button from '@/components/ui/button/Button'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
-import type { MeetingHint } from '@/models/StudentFeedback'
+import type { MeetingHint } from '@/models/Feedback'
 
 type Props = {
   meetingHints: MeetingHint[]

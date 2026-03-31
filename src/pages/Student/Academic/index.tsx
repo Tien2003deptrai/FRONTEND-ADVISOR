@@ -45,6 +45,30 @@ type MyAdvisorData = {
   } | null
 }
 
+type AcademicFormState = {
+  termId: string
+  gpaPrev: string
+  gpaCur: string
+  numFailed: string
+  attendance: string
+  shcvht: string
+  studyHours: string
+  motivation: string
+  stress: string
+}
+
+const initialFormState: AcademicFormState = {
+  termId: '',
+  gpaPrev: '',
+  gpaCur: '',
+  numFailed: '',
+  attendance: '',
+  shcvht: '',
+  studyHours: '',
+  motivation: '',
+  stress: '',
+}
+
 function termIdOf(row: AcademicRow): string {
   const t = row.term_id
   if (t && typeof t === 'object' && '_id' in t) return String(t._id)
@@ -63,15 +87,11 @@ export default function AcademicPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const [termId, setTermId] = useState('')
-  const [gpaPrev, setGpaPrev] = useState('')
-  const [gpaCur, setGpaCur] = useState('')
-  const [numFailed, setNumFailed] = useState('')
-  const [attendance, setAttendance] = useState('')
-  const [shcvht, setShcvht] = useState('')
-  const [studyHours, setStudyHours] = useState('')
-  const [motivation, setMotivation] = useState('')
-  const [stress, setStress] = useState('')
+  const [form, setForm] = useState<AcademicFormState>(initialFormState)
+
+  const setFormField = <K extends keyof AcademicFormState>(key: K, value: AcademicFormState[K]) => {
+    setForm(prev => ({ ...prev, [key]: value }))
+  }
 
   const loadTable = useCallback(async () => {
     setLoading(true)
@@ -122,54 +142,40 @@ export default function AcademicPage() {
   }, [loadTable, loadTerms, loadMyAdvisor])
 
   const openModal = () => {
-    setTermId(defaultTermId || terms[0]?._id || '')
-    setGpaPrev('')
-    setGpaCur('')
-    setNumFailed('')
-    setAttendance('')
-    setShcvht('')
-    setStudyHours('')
-    setMotivation('')
-    setStress('')
+    setForm({
+      ...initialFormState,
+      termId: defaultTermId || terms[0]?._id || '',
+    })
     setModalOpen(true)
   }
 
   const submit = async () => {
-    if (!termId) {
+    if (!form.termId) {
       toast.error('Chọn học kỳ (term_id)')
       return
     }
-    const body: Record<string, unknown> = { term_id: termId }
-    const optFloat = (s: string, key: string, min: number, max: number) => {
-      if (!s.trim()) return
-      const n = Number(s)
-      if (Number.isNaN(n) || n < min || n > max) {
-        throw new Error(`${key} không hợp lệ (${min}–${max})`)
+    const body: Record<string, unknown> = { term_id: form.termId }
+
+    const numberFields: Array<{ value: string; key: string; integer?: boolean }> = [
+      { value: form.gpaPrev, key: 'gpa_prev_sem' },
+      { value: form.gpaCur, key: 'gpa_current' },
+      { value: form.numFailed, key: 'num_failed', integer: true },
+      { value: form.attendance, key: 'attendance_rate' },
+      { value: form.shcvht, key: 'shcvht_participation', integer: true },
+      { value: form.studyHours, key: 'study_hours' },
+      { value: form.motivation, key: 'motivation_score', integer: true },
+      { value: form.stress, key: 'stress_level', integer: true },
+    ]
+
+    for (const field of numberFields) {
+      const raw = field.value.trim()
+      if (!raw) continue
+      const n = Number(raw)
+      if (Number.isNaN(n) || (field.integer && !Number.isInteger(n))) {
+        toast.error('Dữ liệu không hợp lệ')
+        return
       }
-      body[key] = n
-    }
-    const optInt = (s: string, key: string, min: number, max?: number) => {
-      if (!s.trim()) return
-      const n = parseInt(s, 10)
-      if (Number.isNaN(n) || n < min || (max != null && n > max)) {
-        throw new Error(
-          max != null ? `${key} phải từ ${min} đến ${max}` : `${key} phải là số nguyên ≥ ${min}`
-        )
-      }
-      body[key] = n
-    }
-    try {
-      optFloat(gpaPrev, 'gpa_prev_sem', 0, 4)
-      optFloat(gpaCur, 'gpa_current', 0, 4)
-      optInt(numFailed, 'num_failed', 0)
-      optFloat(attendance, 'attendance_rate', 0, 1)
-      optInt(shcvht, 'shcvht_participation', 0)
-      optFloat(studyHours, 'study_hours', 0, 1e6)
-      optInt(motivation, 'motivation_score', 1, 5)
-      optInt(stress, 'stress_level', 1, 5)
-    } catch {
-      toast.error('Dữ liệu không hợp lệ')
-      return
+      body[field.key] = n
     }
 
     setSaving(true)
@@ -359,16 +365,20 @@ export default function AcademicPage() {
               key={`term-${modalOpen}-${terms.length}-${defaultTermId}`}
               options={termOptions}
               placeholder="Chọn học kỳ"
-              onChange={setTermId}
-              defaultValue={termId}
+              onChange={value => setFormField('termId', value)}
+              defaultValue={form.termId}
             />
           </div>
           <div>
             <Label htmlFor="gpa-prev">GPA kỳ trước (0–4)</Label>
             <InputField
               id="gpa-prev"
-              value={gpaPrev}
-              onChange={e => setGpaPrev(e.target.value)}
+              type="number"
+              min="0"
+              max="4"
+              step={0.01}
+              value={form.gpaPrev}
+              onChange={e => setFormField('gpaPrev', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -376,8 +386,12 @@ export default function AcademicPage() {
             <Label htmlFor="gpa-cur">GPA hiện tại (0–4)</Label>
             <InputField
               id="gpa-cur"
-              value={gpaCur}
-              onChange={e => setGpaCur(e.target.value)}
+              type="number"
+              min="0"
+              max="4"
+              step={0.01}
+              value={form.gpaCur}
+              onChange={e => setFormField('gpaCur', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -385,8 +399,11 @@ export default function AcademicPage() {
             <Label htmlFor="failed">Số môn trượt</Label>
             <InputField
               id="failed"
-              value={numFailed}
-              onChange={e => setNumFailed(e.target.value)}
+              type="number"
+              min="0"
+              step={1}
+              value={form.numFailed}
+              onChange={e => setFormField('numFailed', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -394,8 +411,12 @@ export default function AcademicPage() {
             <Label htmlFor="att">Tỉ lệ tham dự (0–1)</Label>
             <InputField
               id="att"
-              value={attendance}
-              onChange={e => setAttendance(e.target.value)}
+              type="number"
+              min="0"
+              max="1"
+              step={0.01}
+              value={form.attendance}
+              onChange={e => setFormField('attendance', e.target.value)}
               disabled={saving}
               placeholder="VD: 0.92"
             />
@@ -404,8 +425,11 @@ export default function AcademicPage() {
             <Label htmlFor="sh">Tham gia SHCVHT (số nguyên ≥0)</Label>
             <InputField
               id="sh"
-              value={shcvht}
-              onChange={e => setShcvht(e.target.value)}
+              type="number"
+              min="0"
+              step={1}
+              value={form.shcvht}
+              onChange={e => setFormField('shcvht', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -413,8 +437,11 @@ export default function AcademicPage() {
             <Label htmlFor="hrs">Giờ tự học (≥0)</Label>
             <InputField
               id="hrs"
-              value={studyHours}
-              onChange={e => setStudyHours(e.target.value)}
+              type="number"
+              min="0"
+              step={0.5}
+              value={form.studyHours}
+              onChange={e => setFormField('studyHours', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -422,8 +449,12 @@ export default function AcademicPage() {
             <Label htmlFor="mot">Động lực (1–5)</Label>
             <InputField
               id="mot"
-              value={motivation}
-              onChange={e => setMotivation(e.target.value)}
+              type="number"
+              min="1"
+              max="5"
+              step={1}
+              value={form.motivation}
+              onChange={e => setFormField('motivation', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -431,8 +462,12 @@ export default function AcademicPage() {
             <Label htmlFor="str">Mức stress (1–5)</Label>
             <InputField
               id="str"
-              value={stress}
-              onChange={e => setStress(e.target.value)}
+              type="number"
+              min="1"
+              max="5"
+              step={1}
+              value={form.stress}
+              onChange={e => setFormField('stress', e.target.value)}
               disabled={saving}
             />
           </div>

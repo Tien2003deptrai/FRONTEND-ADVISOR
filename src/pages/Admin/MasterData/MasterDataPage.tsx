@@ -46,6 +46,46 @@ type TermItem = {
   created_at?: string
 }
 
+type DepartmentFormState = {
+  deptCode: string
+  deptName: string
+}
+
+type MajorFormState = {
+  majorCode: string
+  majorName: string
+  majorDeptId: string
+}
+
+type TermFormState = {
+  termCode: string
+  academicYear: string
+  termName: string
+  startDate: string
+  endDate: string
+  termStatus: 'ACTIVE' | 'INACTIVE' | ''
+}
+
+const initialDepartmentForm: DepartmentFormState = {
+  deptCode: '',
+  deptName: '',
+}
+
+const initialMajorForm: MajorFormState = {
+  majorCode: '',
+  majorName: '',
+  majorDeptId: '',
+}
+
+const initialTermForm: TermFormState = {
+  termCode: '',
+  academicYear: '',
+  termName: '',
+  startDate: '',
+  endDate: '',
+  termStatus: '',
+}
+
 export default function MasterDataPage() {
   const user = useAuthStore(s => s.user)
   const isAdmin = user?.role === 'ADMIN'
@@ -65,24 +105,16 @@ export default function MasterDataPage() {
   const [detailRows, setDetailRows] = useState<[string, string][]>([])
 
   const [createDeptOpen, setCreateDeptOpen] = useState(false)
-  const [deptCode, setDeptCode] = useState('')
-  const [deptName, setDeptName] = useState('')
+  const [deptForm, setDeptForm] = useState<DepartmentFormState>(initialDepartmentForm)
   const [savingDept, setSavingDept] = useState(false)
 
   const [createMajorOpen, setCreateMajorOpen] = useState(false)
-  const [majorCode, setMajorCode] = useState('')
-  const [majorName, setMajorName] = useState('')
-  const [majorDeptId, setMajorDeptId] = useState('')
+  const [majorForm, setMajorForm] = useState<MajorFormState>(initialMajorForm)
   const [savingMajor, setSavingMajor] = useState(false)
   const [departmentPicklist, setDepartmentPicklist] = useState<DepartmentItem[]>([])
 
   const [createTermOpen, setCreateTermOpen] = useState(false)
-  const [termCode, setTermCode] = useState('')
-  const [academicYear, setAcademicYear] = useState('')
-  const [termName, setTermName] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [termStatus, setTermStatus] = useState<'ACTIVE' | 'INACTIVE' | ''>('')
+  const [termForm, setTermForm] = useState<TermFormState>(initialTermForm)
   const [savingTerm, setSavingTerm] = useState(false)
 
   const loadDepartments = useCallback(async () => {
@@ -199,20 +231,19 @@ export default function MasterDataPage() {
   }
 
   const submitDepartment = async () => {
-    if (!deptCode.trim() || !deptName.trim()) {
+    if (!deptForm.deptCode.trim() || !deptForm.deptName.trim()) {
       toast.error('Nhập đủ mã và tên khoa')
       return
     }
     setSavingDept(true)
     try {
       const res = await masterDataService.createDepartment({
-        department_code: deptCode.trim(),
-        department_name: deptName.trim(),
+        department_code: deptForm.deptCode.trim(),
+        department_name: deptForm.deptName.trim(),
       })
       toast.success(res.message || 'Tạo khoa thành công')
       setCreateDeptOpen(false)
-      setDeptCode('')
-      setDeptName('')
+      setDeptForm(initialDepartmentForm)
       loadDepartments()
     } catch {
       toast.error('Đã có lỗi xảy ra')
@@ -222,22 +253,20 @@ export default function MasterDataPage() {
   }
 
   const submitMajor = async () => {
-    if (!majorCode.trim() || !majorName.trim() || !majorDeptId) {
+    if (!majorForm.majorCode.trim() || !majorForm.majorName.trim() || !majorForm.majorDeptId) {
       toast.error('Nhập đủ thông tin và chọn khoa')
       return
     }
     setSavingMajor(true)
     try {
       const res = await masterDataService.createMajor({
-        major_code: majorCode.trim(),
-        major_name: majorName.trim(),
-        department_id: majorDeptId,
+        major_code: majorForm.majorCode.trim(),
+        major_name: majorForm.majorName.trim(),
+        department_id: majorForm.majorDeptId,
       })
       toast.success(res.message || 'Tạo ngành thành công')
       setCreateMajorOpen(false)
-      setMajorCode('')
-      setMajorName('')
-      setMajorDeptId('')
+      setMajorForm(initialMajorForm)
       loadMajors()
     } catch {
       toast.error('Đã có lỗi xảy ra')
@@ -247,31 +276,32 @@ export default function MasterDataPage() {
   }
 
   const submitTerm = async () => {
-    if (!termCode.trim() || !academicYear.trim() || !termName.trim() || !startDate || !endDate) {
+    if (
+      !termForm.termCode.trim() ||
+      !termForm.academicYear.trim() ||
+      !termForm.termName.trim() ||
+      !termForm.startDate ||
+      !termForm.endDate
+    ) {
       toast.error('Nhập đủ các trường học kỳ')
       return
     }
-    const startIso = new Date(startDate).toISOString()
-    const endIso = new Date(endDate).toISOString()
+    const startIso = new Date(termForm.startDate).toISOString()
+    const endIso = new Date(termForm.endDate).toISOString()
     setSavingTerm(true)
     try {
       const body: Record<string, string> = {
-        term_code: termCode.trim(),
-        academic_year: academicYear.trim(),
-        term_name: termName.trim(),
+        term_code: termForm.termCode.trim(),
+        academic_year: termForm.academicYear.trim(),
+        term_name: termForm.termName.trim(),
         start_date: startIso,
         end_date: endIso,
       }
-      if (termStatus) body.status = termStatus
+      if (termForm.termStatus) body.status = termForm.termStatus
       const res = await masterDataService.createTerm(body)
       toast.success(res.message || 'Tạo học kỳ thành công')
       setCreateTermOpen(false)
-      setTermCode('')
-      setAcademicYear('')
-      setTermName('')
-      setStartDate('')
-      setEndDate('')
-      setTermStatus('')
+      setTermForm(initialTermForm)
       loadTerms()
     } catch {
       toast.error('Đã có lỗi xảy ra')
@@ -530,8 +560,8 @@ export default function MasterDataPage() {
             <Label htmlFor="md-dept-code">Mã khoa</Label>
             <InputField
               id="md-dept-code"
-              value={deptCode}
-              onChange={e => setDeptCode(e.target.value)}
+              value={deptForm.deptCode}
+              onChange={e => setDeptForm(prev => ({ ...prev, deptCode: e.target.value }))}
               placeholder="VD: CNTT"
               disabled={savingDept}
             />
@@ -540,8 +570,8 @@ export default function MasterDataPage() {
             <Label htmlFor="md-dept-name">Tên khoa</Label>
             <InputField
               id="md-dept-name"
-              value={deptName}
-              onChange={e => setDeptName(e.target.value)}
+              value={deptForm.deptName}
+              onChange={e => setDeptForm(prev => ({ ...prev, deptName: e.target.value }))}
               placeholder="Tên đầy đủ"
               disabled={savingDept}
             />
@@ -578,15 +608,15 @@ export default function MasterDataPage() {
               key={createMajorOpen ? 'open' : 'closed'}
               options={deptOptions}
               placeholder="Chọn khoa"
-              onChange={setMajorDeptId}
+              onChange={v => setMajorForm(prev => ({ ...prev, majorDeptId: v }))}
             />
           </div>
           <div>
             <Label htmlFor="md-major-code">Mã ngành</Label>
             <InputField
               id="md-major-code"
-              value={majorCode}
-              onChange={e => setMajorCode(e.target.value)}
+              value={majorForm.majorCode}
+              onChange={e => setMajorForm(prev => ({ ...prev, majorCode: e.target.value }))}
               disabled={savingMajor}
             />
           </div>
@@ -594,8 +624,8 @@ export default function MasterDataPage() {
             <Label htmlFor="md-major-name">Tên ngành</Label>
             <InputField
               id="md-major-name"
-              value={majorName}
-              onChange={e => setMajorName(e.target.value)}
+              value={majorForm.majorName}
+              onChange={e => setMajorForm(prev => ({ ...prev, majorName: e.target.value }))}
               disabled={savingMajor}
             />
           </div>
@@ -626,8 +656,8 @@ export default function MasterDataPage() {
             <Label htmlFor="md-term-code">Mã học kỳ</Label>
             <InputField
               id="md-term-code"
-              value={termCode}
-              onChange={e => setTermCode(e.target.value)}
+              value={termForm.termCode}
+              onChange={e => setTermForm(prev => ({ ...prev, termCode: e.target.value }))}
               placeholder="VD: 2026-1"
               disabled={savingTerm}
             />
@@ -636,8 +666,8 @@ export default function MasterDataPage() {
             <Label htmlFor="md-academic-year">Năm học</Label>
             <InputField
               id="md-academic-year"
-              value={academicYear}
-              onChange={e => setAcademicYear(e.target.value)}
+              value={termForm.academicYear}
+              onChange={e => setTermForm(prev => ({ ...prev, academicYear: e.target.value }))}
               placeholder="VD: 2026-2027"
               disabled={savingTerm}
             />
@@ -646,8 +676,8 @@ export default function MasterDataPage() {
             <Label htmlFor="md-term-name">Tên học kỳ</Label>
             <InputField
               id="md-term-name"
-              value={termName}
-              onChange={e => setTermName(e.target.value)}
+              value={termForm.termName}
+              onChange={e => setTermForm(prev => ({ ...prev, termName: e.target.value }))}
               disabled={savingTerm}
             />
           </div>
@@ -656,8 +686,8 @@ export default function MasterDataPage() {
             <input
               id="md-start"
               type="datetime-local"
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
+              value={termForm.startDate}
+              onChange={e => setTermForm(prev => ({ ...prev, startDate: e.target.value }))}
               disabled={savingTerm}
               className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             />
@@ -667,8 +697,8 @@ export default function MasterDataPage() {
             <input
               id="md-end"
               type="datetime-local"
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
+              value={termForm.endDate}
+              onChange={e => setTermForm(prev => ({ ...prev, endDate: e.target.value }))}
               disabled={savingTerm}
               className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             />
@@ -677,8 +707,13 @@ export default function MasterDataPage() {
             <Label htmlFor="md-term-status">Trạng thái (tùy chọn)</Label>
             <select
               id="md-term-status"
-              value={termStatus}
-              onChange={e => setTermStatus(e.target.value as 'ACTIVE' | 'INACTIVE' | '')}
+              value={termForm.termStatus}
+              onChange={e =>
+                setTermForm(prev => ({
+                  ...prev,
+                  termStatus: e.target.value as 'ACTIVE' | 'INACTIVE' | '',
+                }))
+              }
               disabled={savingTerm}
               className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >

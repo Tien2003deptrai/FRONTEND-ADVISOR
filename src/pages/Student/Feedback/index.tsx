@@ -11,13 +11,10 @@ import useAuthStore from '@/stores/authStore'
 import {
   type FeedbackRow,
   type FeedbackCreateForm,
-  type MeetingApiItem,
   type MeetingHint,
   type Pagination,
   SENTIMENT_SKIP,
-  buildMeetingHintFromApiItem,
-  normalizeRefId,
-} from '@/models/StudentFeedback'
+} from '@/models'
 import { MeetingTable, FeedbackCreateModal } from '@/components/Student'
 
 export default function FeedbackPage() {
@@ -62,40 +59,11 @@ export default function FeedbackPage() {
   const loadMeetingHints = useCallback(async () => {
     if (!userId) return
     try {
-      const [meetingRes, fbRes] = await Promise.all([
-        meetingService.listMyMeetings({
-          page: 1,
-          limit: 50,
-        }),
-        feedbackService.listFeedback({
-          page: 1,
-          limit: 50,
-          student_user_id: userId,
-        }),
-      ])
-
-      const meetingPayload = meetingRes.data as {
-        items?: MeetingApiItem[]
-      }
-      const fbPayload = fbRes.data as { items?: FeedbackRow[] }
-      const feedbackByMeeting = new Map<string, { count: number; latest?: string }>()
-      for (const fb of fbPayload.items ?? []) {
-        const mid = normalizeRefId(fb.meeting_id)
-        if (!mid) continue
-        const prev = feedbackByMeeting.get(mid) ?? { count: 0, latest: undefined }
-        prev.count += 1
-        if (
-          fb.submitted_at &&
-          (!prev.latest || new Date(fb.submitted_at).getTime() > new Date(prev.latest).getTime())
-        ) {
-          prev.latest = fb.submitted_at
-        }
-        feedbackByMeeting.set(mid, prev)
-      }
-
-      const items = (meetingPayload.items ?? []).map(m =>
-        buildMeetingHintFromApiItem(m, feedbackByMeeting)
-      )
+      const res = await meetingService.getInfoMeeting({
+        page: 1,
+        limit: 50,
+      })
+      const items = res.data?.items ?? []
       setMeetingHints(
         [...items].sort(
           (a, b) =>

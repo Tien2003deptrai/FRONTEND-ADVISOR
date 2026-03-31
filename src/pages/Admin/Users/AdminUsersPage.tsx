@@ -49,6 +49,30 @@ type ListUser = {
   advisor_info?: { staff_code?: string; title?: string }
 }
 
+type UserCreateFormState = {
+  fullName: string
+  username: string
+  email: string
+  password: string
+  studentCode: string
+  staffCode: string
+  advisorTitle: string
+  deptId: string
+  majorId: string
+}
+
+const initialCreateFormState: UserCreateFormState = {
+  fullName: '',
+  username: '',
+  email: '',
+  password: '',
+  studentCode: '',
+  staffCode: '',
+  advisorTitle: '',
+  deptId: '',
+  majorId: '',
+}
+
 function normalizeRefId(raw: unknown): string {
   if (raw == null || raw === '') return ''
   if (typeof raw === 'object' && raw !== null && '_id' in raw) {
@@ -74,17 +98,16 @@ export default function AdminUsersPage() {
 
   const [createOpen, setCreateOpen] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [fullName, setFullName] = useState('')
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [studentCode, setStudentCode] = useState('')
-  const [staffCode, setStaffCode] = useState('')
-  const [advisorTitle, setAdvisorTitle] = useState('')
-  const [deptId, setDeptId] = useState('')
-  const [majorId, setMajorId] = useState('')
+  const [createForm, setCreateForm] = useState<UserCreateFormState>(initialCreateFormState)
   const [deptPicklist, setDeptPicklist] = useState<DepartmentItem[]>([])
   const [majorPicklist, setMajorPicklist] = useState<MajorItem[]>([])
+
+  const setCreateFormField = <K extends keyof UserCreateFormState>(
+    key: K,
+    value: UserCreateFormState[K]
+  ) => {
+    setCreateForm(prev => ({ ...prev, [key]: value }))
+  }
 
   const roleFilter = useMemo(() => (tab === 'advisor' ? 'ADVISOR' : 'STUDENT'), [tab])
 
@@ -121,8 +144,7 @@ export default function AdminUsersPage() {
   }
 
   const onDeptChange = async (v: string) => {
-    setDeptId(v)
-    setMajorId('')
+    setCreateForm(prev => ({ ...prev, deptId: v, majorId: '' }))
     if (!v) {
       setMajorPicklist([])
       return
@@ -138,55 +160,47 @@ export default function AdminUsersPage() {
   }
 
   const openCreate = async () => {
-    setFullName('')
-    setUsername('')
-    setEmail('')
-    setPassword('')
-    setStudentCode('')
-    setStaffCode('')
-    setAdvisorTitle('')
-    setDeptId('')
-    setMajorId('')
+    setCreateForm(initialCreateFormState)
     setMajorPicklist([])
     await loadPicklists()
     setCreateOpen(true)
   }
 
   const submitCreate = async () => {
-    if (!fullName.trim() || !email.trim() || !password.trim()) {
+    if (!createForm.fullName.trim() || !createForm.email.trim() || !createForm.password.trim()) {
       toast.error('Họ tên, email và mật khẩu là bắt buộc')
       return
     }
-    if (password.length < 6) {
+    if (createForm.password.length < 6) {
       toast.error('Mật khẩu tối thiểu 6 ký tự')
       return
     }
-    if (!deptId || !majorId) {
+    if (!createForm.deptId || !createForm.majorId) {
       toast.error('Phải chọn khoa và ngành cùng lúc (org.department_id + org.major_id)')
       return
     }
-    if (tab === 'student' && !studentCode.trim()) {
+    if (tab === 'student' && !createForm.studentCode.trim()) {
       toast.error('Mã sinh viên (student_info.student_code) là bắt buộc')
       return
     }
-    const usernameTrim = username.trim()
+    const usernameTrim = createForm.username.trim()
     const body: Record<string, unknown> = {
-      profile: { full_name: fullName.trim() },
-      email: email.trim(),
-      password,
+      profile: { full_name: createForm.fullName.trim() },
+      email: createForm.email.trim(),
+      password: createForm.password,
       role: tab === 'advisor' ? 'ADVISOR' : 'STUDENT',
-      org: { department_id: deptId, major_id: majorId },
+      org: { department_id: createForm.deptId, major_id: createForm.majorId },
     }
     if (usernameTrim.length >= 3) body.username = usernameTrim
     if (tab === 'advisor') {
-      if (staffCode.trim() || advisorTitle.trim()) {
+      if (createForm.staffCode.trim() || createForm.advisorTitle.trim()) {
         body.advisor_info = {
-          ...(staffCode.trim() ? { staff_code: staffCode.trim() } : {}),
-          ...(advisorTitle.trim() ? { title: advisorTitle.trim() } : {}),
+          ...(createForm.staffCode.trim() ? { staff_code: createForm.staffCode.trim() } : {}),
+          ...(createForm.advisorTitle.trim() ? { title: createForm.advisorTitle.trim() } : {}),
         }
       }
     } else {
-      body.student_info = { student_code: studentCode.trim() }
+      body.student_info = { student_code: createForm.studentCode.trim() }
     }
 
     setSaving(true)
@@ -431,8 +445,8 @@ export default function AdminUsersPage() {
             <Label htmlFor="u-fullname">Họ tên *</Label>
             <InputField
               id="u-fullname"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
+              value={createForm.fullName}
+              onChange={e => setCreateFormField('fullName', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -441,8 +455,8 @@ export default function AdminUsersPage() {
             <InputField
               id="u-email"
               type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={createForm.email}
+              onChange={e => setCreateFormField('email', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -450,8 +464,8 @@ export default function AdminUsersPage() {
             <Label htmlFor="u-username">Username (tùy, ≥3 ký tự)</Label>
             <InputField
               id="u-username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
+              value={createForm.username}
+              onChange={e => setCreateFormField('username', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -460,8 +474,8 @@ export default function AdminUsersPage() {
             <InputField
               id="u-password"
               type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              value={createForm.password}
+              onChange={e => setCreateFormField('password', e.target.value)}
               disabled={saving}
             />
           </div>
@@ -470,8 +484,8 @@ export default function AdminUsersPage() {
               <Label htmlFor="u-masv">Mã sinh viên *</Label>
               <InputField
                 id="u-masv"
-                value={studentCode}
-                onChange={e => setStudentCode(e.target.value)}
+                value={createForm.studentCode}
+                onChange={e => setCreateFormField('studentCode', e.target.value)}
                 disabled={saving}
               />
             </div>
@@ -481,8 +495,8 @@ export default function AdminUsersPage() {
                 <Label htmlFor="u-staff">Mã cán bộ (tùy)</Label>
                 <InputField
                   id="u-staff"
-                  value={staffCode}
-                  onChange={e => setStaffCode(e.target.value)}
+                  value={createForm.staffCode}
+                  onChange={e => setCreateFormField('staffCode', e.target.value)}
                   disabled={saving}
                 />
               </div>
@@ -490,8 +504,8 @@ export default function AdminUsersPage() {
                 <Label htmlFor="u-title">Chức danh (tùy)</Label>
                 <InputField
                   id="u-title"
-                  value={advisorTitle}
-                  onChange={e => setAdvisorTitle(e.target.value)}
+                  value={createForm.advisorTitle}
+                  onChange={e => setCreateFormField('advisorTitle', e.target.value)}
                   disabled={saving}
                   placeholder="VD: ThS"
                 />
@@ -505,17 +519,17 @@ export default function AdminUsersPage() {
               options={deptOptions}
               placeholder="Chọn khoa"
               onChange={v => void onDeptChange(v)}
-              defaultValue={deptId}
+              defaultValue={createForm.deptId}
             />
           </div>
           <div className="min-w-0">
             <Label>Ngành *</Label>
             <Select
-              key={`creat-maj-${deptId}-${majorPicklist.length}`}
+              key={`creat-maj-${createForm.deptId}-${majorPicklist.length}`}
               options={majorOptions}
               placeholder="Chọn ngành (sau khi chọn khoa)"
-              onChange={setMajorId}
-              defaultValue={majorId}
+              onChange={v => setCreateFormField('majorId', v)}
+              defaultValue={createForm.majorId}
             />
           </div>
         </div>

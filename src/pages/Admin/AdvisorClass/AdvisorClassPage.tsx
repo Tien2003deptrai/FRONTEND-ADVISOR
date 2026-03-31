@@ -74,6 +74,15 @@ type MemberRow = {
   } | null
 }
 
+type UpsertClassFormState = {
+  classCode: string
+  className: string
+  deptId: string
+  majorId: string
+  cohortYear: string
+  status: 'ACTIVE' | 'INACTIVE'
+}
+
 const MAJOR_NONE = '__none__'
 
 /** ObjectId hoặc object populate từ Mongo → chuỗi id */
@@ -105,12 +114,14 @@ export default function AdvisorClassPage() {
 
   const [upsertOpen, setUpsertOpen] = useState(false)
   const [savingClass, setSavingClass] = useState(false)
-  const [upClassCode, setUpClassCode] = useState('')
-  const [upClassName, setUpClassName] = useState('')
-  const [upDeptId, setUpDeptId] = useState('')
-  const [upMajorId, setUpMajorId] = useState('')
-  const [upCohortYear, setUpCohortYear] = useState('')
-  const [upStatus, setUpStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE')
+  const [upsertForm, setUpsertForm] = useState<UpsertClassFormState>({
+    classCode: '',
+    className: '',
+    deptId: '',
+    majorId: '',
+    cohortYear: '',
+    status: 'ACTIVE',
+  })
   const [deptPicklist, setDeptPicklist] = useState<DepartmentItem[]>([])
   const [majorPicklist, setMajorPicklist] = useState<MajorItem[]>([])
 
@@ -208,16 +219,16 @@ export default function AdvisorClassPage() {
     }
 
     if (advisorClass) {
-      setUpClassCode(advisorClass.class_code ?? '')
-      setUpClassName(advisorClass.class_name ?? '')
       const deptLocked =
         isAdmin && advisorOrgDeptId ? advisorOrgDeptId : String(advisorClass.department_id ?? '')
-      setUpDeptId(deptLocked)
-      setUpMajorId(advisorClass.major_id ? String(advisorClass.major_id) : MAJOR_NONE)
-      setUpCohortYear(advisorClass.cohort_year != null ? String(advisorClass.cohort_year) : '')
-      setUpStatus(
-        (advisorClass.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE') as 'ACTIVE' | 'INACTIVE'
-      )
+      setUpsertForm({
+        classCode: advisorClass.class_code ?? '',
+        className: advisorClass.class_name ?? '',
+        deptId: deptLocked,
+        majorId: advisorClass.major_id ? String(advisorClass.major_id) : MAJOR_NONE,
+        cohortYear: advisorClass.cohort_year != null ? String(advisorClass.cohort_year) : '',
+        status: advisorClass.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+      })
       if (advisorClass.department_id) {
         try {
           const rm = await masterDataService.getMajorsList({
@@ -232,18 +243,20 @@ export default function AdvisorClassPage() {
         }
       } else setMajorPicklist([])
     } else {
-      setUpClassCode('')
-      setUpClassName('')
       let defDept = ''
       if (isAdmin && selectedAdvisorId) {
         defDept = advisorOrgDeptId
       } else if (isAdvisor && authUser?.org?.department_id) {
         defDept = normalizeRefId(authUser.org.department_id)
       }
-      setUpDeptId(defDept)
-      setUpMajorId(MAJOR_NONE)
-      setUpCohortYear('')
-      setUpStatus('ACTIVE')
+      setUpsertForm({
+        classCode: '',
+        className: '',
+        deptId: defDept,
+        majorId: MAJOR_NONE,
+        cohortYear: '',
+        status: 'ACTIVE',
+      })
       if (defDept) {
         try {
           const rm = await masterDataService.getMajorsList({
@@ -263,8 +276,7 @@ export default function AdvisorClassPage() {
   }
 
   const handleUpsertDeptChange = async (v: string) => {
-    setUpDeptId(v)
-    setUpMajorId(MAJOR_NONE)
+    setUpsertForm(prev => ({ ...prev, deptId: v, majorId: MAJOR_NONE }))
     if (!v) {
       setMajorPicklist([])
       return
@@ -292,11 +304,11 @@ export default function AdvisorClassPage() {
       toast.error(ADVISOR_NO_DEPT_MSG)
       return
     }
-    if (isAdmin && advisorOrgDeptId && upDeptId !== advisorOrgDeptId) {
+    if (isAdmin && advisorOrgDeptId && upsertForm.deptId !== advisorOrgDeptId) {
       toast.error('Khoa lớp phải trùng khoa trong hồ sơ cố vấn (backend kiểm tra).')
       return
     }
-    if (!upClassCode.trim() || !upDeptId) {
+    if (!upsertForm.classCode.trim() || !upsertForm.deptId) {
       toast.error('Mã lớp và khoa là bắt buộc')
       return
     }
@@ -304,14 +316,14 @@ export default function AdvisorClassPage() {
     try {
       const body: Record<string, unknown> = {
         advisor_user_id: advId,
-        class_code: upClassCode.trim(),
-        department_id: upDeptId,
-        status: upStatus,
+        class_code: upsertForm.classCode.trim(),
+        department_id: upsertForm.deptId,
+        status: upsertForm.status,
       }
-      if (upClassName.trim()) body.class_name = upClassName.trim()
-      if (upMajorId && upMajorId !== MAJOR_NONE) body.major_id = upMajorId
-      if (upCohortYear.trim()) {
-        const y = parseInt(upCohortYear, 10)
+      if (upsertForm.className.trim()) body.class_name = upsertForm.className.trim()
+      if (upsertForm.majorId && upsertForm.majorId !== MAJOR_NONE) body.major_id = upsertForm.majorId
+      if (upsertForm.cohortYear.trim()) {
+        const y = parseInt(upsertForm.cohortYear, 10)
         if (!Number.isNaN(y)) body.cohort_year = y
       }
       const res = await advisorClassService.upsertAdvisorClass(body)
@@ -714,8 +726,8 @@ export default function AdvisorClassPage() {
             <Label htmlFor="ac-class-code">Mã lớp *</Label>
             <InputField
               id="ac-class-code"
-              value={upClassCode}
-              onChange={e => setUpClassCode(e.target.value)}
+              value={upsertForm.classCode}
+              onChange={e => setUpsertForm(prev => ({ ...prev, classCode: e.target.value }))}
               disabled={savingClass}
             />
           </div>
@@ -723,8 +735,8 @@ export default function AdvisorClassPage() {
             <Label htmlFor="ac-class-name">Tên lớp</Label>
             <InputField
               id="ac-class-name"
-              value={upClassName}
-              onChange={e => setUpClassName(e.target.value)}
+              value={upsertForm.className}
+              onChange={e => setUpsertForm(prev => ({ ...prev, className: e.target.value }))}
               disabled={savingClass}
             />
           </div>
@@ -742,22 +754,22 @@ export default function AdvisorClassPage() {
               </p>
             ) : (
               <Select
-                key={`dept-${upsertOpen}-${upDeptId}`}
+                key={`dept-${upsertOpen}-${upsertForm.deptId}`}
                 options={deptOptions}
                 placeholder="Chọn khoa"
                 onChange={v => void handleUpsertDeptChange(v)}
-                defaultValue={upDeptId}
+                defaultValue={upsertForm.deptId}
               />
             )}
           </div>
           <div>
             <Label>Ngành (tuỳ chọn)</Label>
             <Select
-              key={`maj-${upsertOpen}-${upDeptId}-${majorPicklist.length}-${upMajorId || MAJOR_NONE}`}
+              key={`maj-${upsertOpen}-${upsertForm.deptId}-${majorPicklist.length}-${upsertForm.majorId || MAJOR_NONE}`}
               options={[{ value: MAJOR_NONE, label: '— Không chọn —' }, ...majorOptions]}
               placeholder="Ngành"
-              onChange={setUpMajorId}
-              defaultValue={upMajorId || MAJOR_NONE}
+              onChange={v => setUpsertForm(prev => ({ ...prev, majorId: v }))}
+              defaultValue={upsertForm.majorId || MAJOR_NONE}
             />
           </div>
           <div>
@@ -765,8 +777,8 @@ export default function AdvisorClassPage() {
             <InputField
               id="ac-cohort"
               type="number"
-              value={upCohortYear}
-              onChange={e => setUpCohortYear(e.target.value)}
+              value={upsertForm.cohortYear}
+              onChange={e => setUpsertForm(prev => ({ ...prev, cohortYear: e.target.value }))}
               disabled={savingClass}
             />
           </div>
@@ -774,8 +786,13 @@ export default function AdvisorClassPage() {
             <Label htmlFor="ac-status">Trạng thái</Label>
             <select
               id="ac-status"
-              value={upStatus}
-              onChange={e => setUpStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}
+              value={upsertForm.status}
+              onChange={e =>
+                setUpsertForm(prev => ({
+                  ...prev,
+                  status: e.target.value as 'ACTIVE' | 'INACTIVE',
+                }))
+              }
               disabled={savingClass}
               className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
             >

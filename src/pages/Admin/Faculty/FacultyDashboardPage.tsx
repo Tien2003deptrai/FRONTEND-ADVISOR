@@ -50,7 +50,7 @@ export default function FacultyDashboardPage() {
 
   const loadDepartments = useCallback(async () => {
     try {
-      const res = await masterDataService.getDepartmentsList({ page: 1, limit: 200 })
+      const res = await masterDataService.getDepartmentsList({ page: 1, limit: 99 })
       const d = res.data as { items: DepartmentItem[] }
       setDeptPicklist(d.items ?? [])
     } catch {

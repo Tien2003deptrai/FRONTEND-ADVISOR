@@ -7,12 +7,11 @@ import Select from '@/components/form/Select'
 import TextArea from '@/components/form/input/TextArea'
 import { meetingService } from '@/services/MeetingService'
 import {
+  type MeetingHint,
   SENTIMENT_OPTS,
   SENTIMENT_SKIP,
   type FeedbackCreateForm,
-  type MeetingApiItem,
-  buildMeetingHintFromApiItem,
-} from '@/models/StudentFeedback'
+} from '@/models/Feedback'
 
 type Props = {
   isOpen: boolean
@@ -30,7 +29,7 @@ export default function FeedbackCreateModal({
   const [saving, setSaving] = useState(false)
   const [loadingMeetings, setLoadingMeetings] = useState(false)
   const [meetingHints, setMeetingHints] = useState<
-    ReturnType<typeof buildMeetingHintFromApiItem>[]
+    MeetingHint[]
   >([])
   const [form, setForm] = useState<FeedbackCreateForm>({
     meetingId: '',
@@ -42,11 +41,10 @@ export default function FeedbackCreateModal({
   const loadMeetings = async () => {
     setLoadingMeetings(true)
     try {
-      const res = await meetingService.listMyMeetings({ page: 1, limit: 100 })
-      const payload = res.data as { items?: MeetingApiItem[] }
-      const hints = (payload.items ?? []).map(item => buildMeetingHintFromApiItem(item, new Map()))
+      const res = await meetingService.getInfoMeeting({ page: 1, limit: 100 })
+      const hints = res.data?.items ?? []
       setMeetingHints(
-        hints.sort(
+        [...hints].sort(
           (a, b) =>
             new Date(b.meeting_time ?? 0).getTime() - new Date(a.meeting_time ?? 0).getTime()
         )

@@ -6,7 +6,6 @@ import {
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  MailIcon,
   PlugInIcon,
   UserIcon,
 } from '../icons'
@@ -35,12 +34,7 @@ const mainNav: NavItem[] = [
     icon: <ChatIcon />,
     name: 'Phản hồi',
     path: '/student/feedback',
-  },
-  {
-    icon: <MailIcon />,
-    name: 'Thông báo',
-    path: '/student/notifications',
-  },
+  }
 ]
 
 const othersNav: NavItem[] = [

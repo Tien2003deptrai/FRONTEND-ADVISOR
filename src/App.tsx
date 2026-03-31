@@ -15,7 +15,7 @@ import {
   FeedbackListPage,
   Home,
 } from './pages/Admin'
-import { DashboardPage, AcademicPage, FeedbackPage, NotificationsPage } from './pages/Student'
+import { DashboardPage, AcademicPage, FeedbackPage } from './pages/Student'
 import FormElements from './pages/Forms/FormElements'
 import AppLayout from './layout/AppLayout'
 import ProtectLayout from './layout/ProtectLayout'
@@ -34,7 +34,6 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="academic" element={<AcademicPage />} />
                 <Route path="feedback" element={<FeedbackPage />} />
-                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="profile" element={<UserProfiles />} />
               </Route>
             </Route>
