@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import PageMeta from '../../components/common/PageMeta'
-import PageBreadcrumb from '../../components/common/PageBreadCrumb'
-import { Modal } from '../../components/ui/modal'
-import Button from '../../components/ui/button/Button'
-import Label from '../../components/form/Label'
-import Select from '../../components/form/Select'
-import TextArea from '../../components/form/input/TextArea'
+import PageMeta from '@/components/common/PageMeta'
+import PageBreadcrumb from '@/components/common/PageBreadCrumb'
+import { Modal } from '@/components/ui/modal'
+import Button from '@/components/ui/button/Button'
+import Label from '@/components/form/Label'
+import Select from '@/components/form/Select'
+import TextArea from '@/components/form/input/TextArea'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../components/ui/table'
-import { feedbackService } from '../../services/FeedbackService'
-import { meetingService } from '../../services/MeetingService'
-import useAuthStore from '../../stores/authStore'
-import { formatAxiosMessage } from '../../utils/formatAxiosMessage'
+} from '@/components/ui/table'
+import { feedbackService } from '@/services/FeedbackService'
+import { meetingService } from '@/services/MeetingService'
+import useAuthStore from '@/stores/authStore'
+import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type Pagination = {
   page: number
@@ -57,7 +57,7 @@ const SENTIMENT_OPTS = [
   { value: 'NEGATIVE', label: 'NEGATIVE' },
 ]
 
-export default function StudentFeedbackPage() {
+export default function FeedbackPage() {
   const userId = useAuthStore(s => s.user?._id)
   const [page, setPage] = useState(1)
   const limit = 15

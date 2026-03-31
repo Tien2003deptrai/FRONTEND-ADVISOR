@@ -3,18 +3,18 @@ import { Link } from 'react-router'
 import Chart from 'react-apexcharts'
 import type { ApexOptions } from 'apexcharts'
 import { toast } from 'sonner'
-import PageMeta from '../../components/common/PageMeta'
-import PageBreadcrumb from '../../components/common/PageBreadCrumb'
-import Button from '../../components/ui/button/Button'
+import PageMeta from '@/components/common/PageMeta'
+import PageBreadcrumb from '@/components/common/PageBreadCrumb'
+import Button from '@/components/ui/button/Button'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../components/ui/table'
-import { dashboardService } from '../../services/DashboardService'
-import { formatAxiosMessage } from '../../utils/formatAxiosMessage'
+} from '@/components/ui/table'
+import { dashboardService } from '@/services/DashboardService'
+import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type AcademicRow = {
   term_id?: string | { _id?: string }
@@ -40,7 +40,7 @@ type StudentDashboardData = {
   sentiment_trend: SentimentAgg[]
 }
 
-export default function StudentDashboardPage() {
+export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<StudentDashboardData | null>(null)
 

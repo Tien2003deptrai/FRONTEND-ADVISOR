@@ -1,24 +1,24 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import PageMeta from '../../components/common/PageMeta'
-import PageBreadcrumb from '../../components/common/PageBreadCrumb'
-import { Modal } from '../../components/ui/modal'
-import Button from '../../components/ui/button/Button'
-import Label from '../../components/form/Label'
-import InputField from '../../components/form/input/InputField'
-import Select from '../../components/form/Select'
+import PageMeta from '@/components/common/PageMeta'
+import PageBreadcrumb from '@/components/common/PageBreadCrumb'
+import { Modal } from '@/components/ui/modal'
+import Button from '@/components/ui/button/Button'
+import Label from '@/components/form/Label'
+import InputField from '@/components/form/input/InputField'
+import Select from '@/components/form/Select'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../components/ui/table'
-import { academicService } from '../../services/AcademicService'
-import { dashboardService } from '../../services/DashboardService'
-import { masterDataService } from '../../services/MasterDataService'
-import { studentService } from '../../services/StudentService'
-import { formatAxiosMessage } from '../../utils/formatAxiosMessage'
+} from '@/components/ui/table'
+import { academicService } from '@/services/AcademicService'
+import { dashboardService } from '@/services/DashboardService'
+import { masterDataService } from '@/services/MasterDataService'
+import { studentService } from '@/services/StudentService'
+import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type AcademicRow = {
   term_id?: string | { _id?: string }
@@ -59,7 +59,7 @@ function termIdOf(row: AcademicRow): string {
   return ''
 }
 
-export default function StudentAcademicPage() {
+export default function AcademicPage() {
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<AcademicRow[]>([])
   const [advisorLoading, setAdvisorLoading] = useState(false)

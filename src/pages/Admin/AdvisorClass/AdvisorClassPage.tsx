@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'sonner'
-import PageMeta from '../../../components/common/PageMeta'
-import PageBreadcrumb from '../../../components/common/PageBreadCrumb'
-import { Modal } from '../../../components/ui/modal'
-import Button from '../../../components/ui/button/Button'
-import Label from '../../../components/form/Label'
-import InputField from '../../../components/form/input/InputField'
-import Select from '../../../components/form/Select'
-import MultiSelect from '../../../components/form/MultiSelect'
+import PageMeta from '@/components/common/PageMeta'
+import PageBreadcrumb from '@/components/common/PageBreadCrumb'
+import { Modal } from '@/components/ui/modal'
+import Button from '@/components/ui/button/Button'
+import Label from '@/components/form/Label'
+import InputField from '@/components/form/input/InputField'
+import Select from '@/components/form/Select'
+import MultiSelect from '@/components/form/MultiSelect'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../../components/ui/table'
-import { advisorClassService } from '../../../services/AdvisorClassService'
-import { classMemberService } from '../../../services/ClassMemberService'
-import { userService } from '../../../services/UserService'
-import { masterDataService } from '../../../services/MasterDataService'
-import useAuthStore from '../../../stores/authStore'
+} from '@/components/ui/table'
+import { advisorClassService } from '@/services/AdvisorClassService'
+import { classMemberService } from '@/services/ClassMemberService'
+import { userService } from '@/services/UserService'
+import { masterDataService } from '@/services/MasterDataService'
+import useAuthStore from '@/stores/authStore'
 
 type TabKey = 'class' | 'members'
 

@@ -7,11 +7,20 @@ import SignUp from './pages/AuthPages/SignUp'
 import NotFound from './pages/OtherPage/NotFound'
 import UserProfiles from './pages/UserProfiles'
 // Admin Pages
-import { MasterDataPage, AdvisorClassPage, AdminUsersPage, FacultyDashboardPage, FeedbackListPage, Home } from './pages/Admin'
-import StudentDashboardPage from './pages/Student/StudentDashboardPage'
-import StudentAcademicPage from './pages/Student/StudentAcademicPage'
-import StudentFeedbackPage from './pages/Student/StudentFeedbackPage'
-import StudentNotificationsPage from './pages/Student/StudentNotificationsPage'
+import {
+    MasterDataPage,
+    AdvisorClassPage,
+    AdminUsersPage,
+    FacultyDashboardPage,
+    FeedbackListPage,
+    Home
+} from './pages/Admin'
+import {
+    DashboardPage,
+    AcademicPage,
+    FeedbackPage,
+    NotificationsPage
+} from './pages/Student'
 import FormElements from './pages/Forms/FormElements'
 import AppLayout from './layout/AppLayout'
 import ProtectLayout from './layout/ProtectLayout'
@@ -27,10 +36,10 @@ export default function App() {
             {/* Sinh viên: layout riêng */}
             <Route path="student" element={<RequireStudent />}>
               <Route element={<ProtectLayout />}>
-                <Route index element={<StudentDashboardPage />} />
-                <Route path="academic" element={<StudentAcademicPage />} />
-                <Route path="feedback" element={<StudentFeedbackPage />} />
-                <Route path="notifications" element={<StudentNotificationsPage />} />
+                <Route index element={<DashboardPage />} />
+                <Route path="academic" element={<AcademicPage />} />
+                <Route path="feedback" element={<FeedbackPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="profile" element={<UserProfiles />} />
               </Route>
             </Route>

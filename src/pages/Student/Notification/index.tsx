@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import PageMeta from '../../components/common/PageMeta'
-import PageBreadcrumb from '../../components/common/PageBreadCrumb'
-import { Modal } from '../../components/ui/modal'
-import Button from '../../components/ui/button/Button'
+import PageMeta from '@/components/common/PageMeta'
+import PageBreadcrumb from '@/components/common/PageBreadCrumb'
+import { Modal } from '@/components/ui/modal'
+import Button from '@/components/ui/button/Button'
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from '../../components/ui/table'
-import { notificationService } from '../../services/NotificationService'
-import { formatAxiosMessage } from '../../utils/formatAxiosMessage'
+} from '@/components/ui/table'
+import { notificationService } from '@/services/NotificationService'
+import { formatAxiosMessage } from '@/utils/formatAxiosMessage'
 
 type Pagination = {
   page: number
@@ -30,7 +30,7 @@ type NotificationRow = {
   sent_at?: string
 }
 
-export default function StudentNotificationsPage() {
+export default function NotificationsPage() {
   const [page, setPage] = useState(1)
   const limit = 20
   const [loading, setLoading] = useState(false)
