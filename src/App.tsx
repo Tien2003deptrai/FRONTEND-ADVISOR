@@ -1,13 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router'
 import RequireAuth from './components/auth/RequireAuth'
+import RequireStaff from './components/auth/RequireStaff'
+import RequireStudent from './components/auth/RequireStudent'
 import SignIn from './pages/AuthPages/SignIn'
 import SignUp from './pages/AuthPages/SignUp'
 import NotFound from './pages/OtherPage/NotFound'
 import UserProfiles from './pages/UserProfiles'
 // Admin Pages
 import { MasterDataPage, AdvisorClassPage, AdminUsersPage, FacultyDashboardPage, FeedbackListPage, Home } from './pages/Admin'
+import StudentDashboardPage from './pages/Student/StudentDashboardPage'
+import StudentAcademicPage from './pages/Student/StudentAcademicPage'
+import StudentFeedbackPage from './pages/Student/StudentFeedbackPage'
+import StudentNotificationsPage from './pages/Student/StudentNotificationsPage'
 import FormElements from './pages/Forms/FormElements'
 import AppLayout from './layout/AppLayout'
+import ProtectLayout from './layout/ProtectLayout'
 import { ScrollToTop } from './components/common/ScrollToTop'
 
 export default function App() {
@@ -17,21 +24,32 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           <Route element={<RequireAuth />}>
-            <Route element={<AppLayout />}>
-              <Route index path="/" element={<Home />} />
-              <Route path="/faculty-dashboard" element={<FacultyDashboardPage />} />
-              <Route path="/feedback-list" element={<FeedbackListPage />} />
+            {/* Sinh viên: layout riêng */}
+            <Route path="student" element={<RequireStudent />}>
+              <Route element={<ProtectLayout />}>
+                <Route index element={<StudentDashboardPage />} />
+                <Route path="academic" element={<StudentAcademicPage />} />
+                <Route path="feedback" element={<StudentFeedbackPage />} />
+                <Route path="notifications" element={<StudentNotificationsPage />} />
+                <Route path="profile" element={<UserProfiles />} />
+              </Route>
+            </Route>
 
-              {/* Others Page */}
-              <Route path="/profile" element={<UserProfiles />} />
-              <Route path="/master-data" element={<MasterDataPage />} />
-              <Route path="/advisor-classes" element={<AdvisorClassPage />} />
+            {/* ADVISOR / FACULTY / ADMIN */}
+            <Route element={<RequireStaff />}>
+              <Route element={<AppLayout />}>
+                <Route index element={<Home />} />
+                <Route path="faculty-dashboard" element={<FacultyDashboardPage />} />
+                <Route path="feedback-list" element={<FeedbackListPage />} />
 
-              {/* Forms */}
-              <Route path="/form-elements" element={<FormElements />} />
+                <Route path="profile" element={<UserProfiles />} />
+                <Route path="master-data" element={<MasterDataPage />} />
+                <Route path="advisor-classes" element={<AdvisorClassPage />} />
 
-              {/* Cố vấn & sinh viên (ADMIN) — thay Basic Tables */}
-              <Route path="/admin-users" element={<AdminUsersPage />} />
+                <Route path="form-elements" element={<FormElements />} />
+
+                <Route path="admin-users" element={<AdminUsersPage />} />
+              </Route>
             </Route>
           </Route>
 

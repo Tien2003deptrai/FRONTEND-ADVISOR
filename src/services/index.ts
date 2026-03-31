@@ -1,4 +1,5 @@
 export * from './AuthService';
+export * from './AcademicService';
 export * from './DashboardService';
 export * from './UserService';
 export * from './StudentService';

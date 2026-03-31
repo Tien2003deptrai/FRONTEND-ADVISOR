@@ -8,6 +8,15 @@ import SignInForm from '../../components/auth/SignInFormAuth'
 import { authService } from '../../services/AuthService'
 import useAuthStore from '../../stores/authStore'
 
+function resolvePostLoginPath(role: string | undefined, from: string) {
+    const isStudent = role === 'STUDENT'
+    const home = isStudent ? '/student' : '/'
+    if (!from || from === '/signin') return home
+    if (isStudent && !from.startsWith('/student')) return '/student'
+    if (!isStudent && from.startsWith('/student')) return '/'
+    return from
+}
+
 export default function SignIn() {
     const navigate = useNavigate()
     const location = useLocation()
@@ -17,15 +26,16 @@ export default function SignIn() {
             : '/'
 
     const login = useAuthStore((s) => s.login)
+    const user = useAuthStore((s) => s.user)
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     useEffect(() => {
-        if (isAuthenticated) {
-            navigate(from === '/signin' ? '/' : from, { replace: true })
+        if (isAuthenticated && user) {
+            navigate(resolvePostLoginPath(user.role, from), { replace: true })
         }
-    }, [isAuthenticated, navigate, from])
+    }, [isAuthenticated, navigate, user, from])
 
     const handleSignIn = async (email: string, password: string) => {
         setIsSubmitting(true)
@@ -34,7 +44,7 @@ export default function SignIn() {
             const payload = res.data as AuthLoginPayload
             login(payload.user, payload.access_token, payload.refresh_token)
             toast.success(res.message || 'Đăng nhập thành công')
-            navigate(from === '/signin' ? '/' : from, { replace: true })
+            navigate(resolvePostLoginPath(payload.user?.role, from), { replace: true })
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 const msg = (err.response?.data as { message?: string })?.message
