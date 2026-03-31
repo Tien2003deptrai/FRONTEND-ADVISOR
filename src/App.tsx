@@ -12,7 +12,6 @@ import AdminUsersPage from './pages/Users/AdminUsersPage'
 import FacultyDashboardPage from './pages/Faculty/FacultyDashboardPage'
 import FeedbackListPage from './pages/Feedback/FeedbackListPage'
 import FormElements from './pages/Forms/FormElements'
-import Blank from './pages/Blank'
 import AppLayout from './layout/AppLayout'
 import { ScrollToTop } from './components/common/ScrollToTop'
 import Home from './pages/Dashboard/Home'
@@ -33,13 +32,12 @@ export default function App() {
               <Route path="/profile" element={<UserProfiles />} />
               <Route path="/master-data" element={<MasterDataPage />} />
               <Route path="/advisor-classes" element={<AdvisorClassMembersPage />} />
-              <Route path="/blank" element={<Blank />} />
 
               {/* Forms */}
               <Route path="/form-elements" element={<FormElements />} />
 
               {/* Cố vấn & sinh viên (ADMIN) — thay Basic Tables */}
-              <Route path="/basic-tables" element={<AdminUsersPage />} />
+              <Route path="/admin-users" element={<AdminUsersPage />} />
 
               {/* Charts */}
               <Route path="/line-chart" element={<LineChart />} />
