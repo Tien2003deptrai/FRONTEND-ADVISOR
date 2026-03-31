@@ -1,12 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router'
+import RequireAuth from './components/auth/RequireAuth'
 import SignIn from './pages/AuthPages/SignIn'
 import SignUp from './pages/AuthPages/SignUp'
 import NotFound from './pages/OtherPage/NotFound'
 import UserProfiles from './pages/UserProfiles'
 import LineChart from './pages/Charts/LineChart'
 import BarChart from './pages/Charts/BarChart'
-import Calendar from './pages/Calendar'
-import BasicTables from './pages/Tables/BasicTables'
+import MasterDataPage from './pages/MasterData/MasterDataPage'
+import AdvisorClassMembersPage from './pages/AdvisorClass/AdvisorClassMembersPage'
+import AdminUsersPage from './pages/Users/AdminUsersPage'
+import FacultyDashboardPage from './pages/Faculty/FacultyDashboardPage'
+import FeedbackListPage from './pages/Feedback/FeedbackListPage'
 import FormElements from './pages/Forms/FormElements'
 import Blank from './pages/Blank'
 import AppLayout from './layout/AppLayout'
@@ -19,24 +23,28 @@ export default function App() {
       <Router>
         <ScrollToTop />
         <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
+          <Route element={<RequireAuth />}>
+            <Route element={<AppLayout />}>
+              <Route index path="/" element={<Home />} />
+              <Route path="/faculty-dashboard" element={<FacultyDashboardPage />} />
+              <Route path="/feedback-list" element={<FeedbackListPage />} />
 
-            {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/blank" element={<Blank />} />
+              {/* Others Page */}
+              <Route path="/profile" element={<UserProfiles />} />
+              <Route path="/master-data" element={<MasterDataPage />} />
+              <Route path="/advisor-classes" element={<AdvisorClassMembersPage />} />
+              <Route path="/blank" element={<Blank />} />
 
-            {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
+              {/* Forms */}
+              <Route path="/form-elements" element={<FormElements />} />
 
-            {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
+              {/* Cố vấn & sinh viên (ADMIN) — thay Basic Tables */}
+              <Route path="/basic-tables" element={<AdminUsersPage />} />
 
-            {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
+              {/* Charts */}
+              <Route path="/line-chart" element={<LineChart />} />
+              <Route path="/bar-chart" element={<BarChart />} />
+            </Route>
           </Route>
 
           {/* Auth Layout */}

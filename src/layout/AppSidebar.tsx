@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router'
 
 // Assume these icons are imported from an icon library
 import {
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -27,17 +26,26 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: 'Dashboard',
-    subItems: [{ name: 'Ecommerce', path: '/', pro: false }],
+    subItems: [
+      { name: 'Ecommerce', path: '/', pro: false },
+      { name: 'Đơn vị (Faculty)', path: '/faculty-dashboard', pro: false },
+      { name: 'Phản hồi', path: '/feedback-list', pro: false },
+    ],
   },
   {
-    icon: <CalenderIcon />,
-    name: 'Calendar',
-    path: '/calendar',
-  },
-  {
-    name: 'Tables',
     icon: <TableIcon />,
-    subItems: [{ name: 'Basic Tables', path: '/basic-tables', pro: false }],
+    name: 'Cấu hình chung',
+    path: '/master-data',
+  },
+  {
+    icon: <ListIcon />,
+    name: 'Lớp & thành viên',
+    path: '/advisor-classes',
+  },
+  {
+    name: 'Quản lý người dùng',
+    icon: <UserCircleIcon />,
+    subItems: [{ name: 'Cố vấn & sinh viên', path: '/basic-tables', pro: false }],
   },
   {
     name: 'Pages',
