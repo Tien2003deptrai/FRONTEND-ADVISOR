@@ -16,11 +16,17 @@ import {
 
 type Props = {
   isOpen: boolean
+  initialMeetingId?: string
   onClose: () => void
   onSubmit: (form: FeedbackCreateForm) => Promise<boolean>
 }
 
-export default function FeedbackCreateModal({ isOpen, onClose, onSubmit }: Props) {
+export default function FeedbackCreateModal({
+  isOpen,
+  initialMeetingId,
+  onClose,
+  onSubmit,
+}: Props) {
   const [saving, setSaving] = useState(false)
   const [loadingMeetings, setLoadingMeetings] = useState(false)
   const [meetingHints, setMeetingHints] = useState<
@@ -55,9 +61,14 @@ export default function FeedbackCreateModal({ isOpen, onClose, onSubmit }: Props
 
   useEffect(() => {
     if (!isOpen) return
-    setForm({ meetingId: '', text: '', rating: 0, sentiment: SENTIMENT_SKIP })
+    setForm({
+      meetingId: initialMeetingId ?? '',
+      text: '',
+      rating: 0,
+      sentiment: SENTIMENT_SKIP,
+    })
     void loadMeetings()
-  }, [isOpen])
+  }, [isOpen, initialMeetingId])
 
   const meetingOptions = useMemo(
     () =>

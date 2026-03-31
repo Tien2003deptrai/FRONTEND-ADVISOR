@@ -4,7 +4,7 @@ import type { MeetingHint } from '@/models/StudentFeedback'
 
 type Props = {
   meetingHints: MeetingHint[]
-  onFeedback: () => void
+  onFeedback: (meetingId: string) => void
 }
 
 export default function MeetingHintsTable({ meetingHints, onFeedback }: Props) {
@@ -68,7 +68,11 @@ export default function MeetingHintsTable({ meetingHints, onFeedback }: Props) {
                     : '—'}
                 </TableCell>
                 <TableCell className="px-3 py-2">
-                  <Button size="sm" variant="outline" onClick={onFeedback}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onFeedback(row.meeting_id)}
+                  >
                     Gửi feedback
                   </Button>
                 </TableCell>

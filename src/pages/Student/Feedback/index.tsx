@@ -18,8 +18,7 @@ import {
   buildMeetingHintFromApiItem,
   normalizeRefId,
 } from '@/models/StudentFeedback'
-import MeetingHintsTable from './components/MeetingHintsTable'
-import FeedbackCreateModal from './components/FeedbackCreateModal'
+import { MeetingTable, FeedbackCreateModal } from '@/components/Student'
 
 export default function FeedbackPage() {
   const userId = useAuthStore(s => s.user?._id)
@@ -34,6 +33,7 @@ export default function FeedbackPage() {
   const [detailRow, setDetailRow] = useState<FeedbackRow | null>(null)
 
   const [createOpen, setCreateOpen] = useState(false)
+  const [selectedMeetingId, setSelectedMeetingId] = useState('')
 
   const fetchPage = useCallback(
     async (p: number) => {
@@ -121,11 +121,8 @@ export default function FeedbackPage() {
     setDetailOpen(true)
   }
 
-  const openCreate = () => {
-    setCreateOpen(true)
-  }
-
-  const openCreateForMeeting = () => {
+  const openCreateForMeeting = (meetingId: string) => {
+    setSelectedMeetingId(meetingId)
     setCreateOpen(true)
   }
 
@@ -159,9 +156,6 @@ export default function FeedbackPage() {
           Danh sách: <code className="text-xs">POST /feedback/list</code> (lọc theo tài khoản). Gửi
           mới: <code className="text-xs">POST /feedback</code> — form trong modal.
         </p>
-        <Button size="sm" onClick={openCreate}>
-          Gửi phản hồi mới
-        </Button>
       </div>
 
       <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
@@ -171,7 +165,10 @@ export default function FeedbackPage() {
         <p className="mb-3 text-xs text-gray-500">
           Danh sách lấy từ API <code>POST /meeting/my</code> theo tài khoản STUDENT.
         </p>
-        <MeetingHintsTable meetingHints={meetingHints} onFeedback={openCreateForMeeting} />
+        <MeetingTable
+          meetingHints={meetingHints}
+          onFeedback={openCreateForMeeting}
+        />
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
@@ -289,6 +286,7 @@ export default function FeedbackPage() {
 
       <FeedbackCreateModal
         isOpen={createOpen}
+        initialMeetingId={selectedMeetingId}
         onClose={() => setCreateOpen(false)}
         onSubmit={submitFeedback}
       />
