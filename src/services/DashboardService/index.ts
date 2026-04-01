@@ -13,6 +13,11 @@ class DashboardService {
     const response = await this.api.post('/dashboard/faculty', body)
     return response.data
   }
+
+  getAdvisorDashboard = async (body: object = {}): Promise<ApiResponse> => {
+    const response = await this.api.post('/dashboard/advisor', body)
+    return response.data
+  }
 }
 
 export const dashboardService = new DashboardService()

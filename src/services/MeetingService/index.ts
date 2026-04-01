@@ -16,6 +16,16 @@ class MeetingService {
     const response = await this.api.post('/meeting/my-info', body)
     return response.data
   }
+
+  listAdvisorMeetings = async (body: object = {}): Promise<ApiResponse> => {
+    const response = await this.api.post('/meeting/advisor/list', body)
+    return response.data
+  }
+
+  createMeeting = async (body: object): Promise<ApiResponse> => {
+    const response = await this.api.post('/meeting/', body)
+    return response.data
+  }
 }
 
 export const meetingService = new MeetingService()

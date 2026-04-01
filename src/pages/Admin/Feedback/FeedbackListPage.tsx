@@ -54,7 +54,12 @@ const emptyFilters = () => ({
   sentiment: SENTIMENT_ALL as string,
 })
 
-export default function FeedbackListPage() {
+export type FeedbackListPageProps = {
+  /** Khi set (ví dụ cố vấn), lọc cố định theo advisor_user_id và ẩn ô nhập advisor */
+  presetAdvisorUserId?: string
+}
+
+export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPageProps = {}) {
   const [page, setPage] = useState(1)
   const limit = 20
   const [loading, setLoading] = useState(false)
@@ -94,6 +99,13 @@ export default function FeedbackListPage() {
     void loadList()
   }, [loadList])
 
+  useEffect(() => {
+    if (!presetAdvisorUserId) return
+    setDraft(d => ({ ...d, advisorId: presetAdvisorUserId }))
+    setApplied(d => ({ ...d, advisorId: presetAdvisorUserId }))
+    setPage(1)
+  }, [presetAdvisorUserId])
+
   const openDetail = (row: FeedbackRow) => {
     setDetailRow(row)
     setDetailOpen(true)
@@ -110,14 +122,18 @@ export default function FeedbackListPage() {
         title="Phản hồi | Advisor"
         description="POST /api/feedback/list — xem phản hồi sau meeting"
       />
-      <PageBreadcrumb pageTitle="Phản hồi (danh sách)" />
+      <PageBreadcrumb
+        pageTitle={presetAdvisorUserId ? 'Phản hồi (lớp của tôi)' : 'Phản hồi (danh sách)'}
+      />
 
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
         <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           Lọc theo lớp, sinh viên, cố vấn hoặc cảm xúc (MongoId phải hợp lệ). API:{' '}
           <code className="text-xs">POST /feedback/list</code>.
         </p>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div
+          className={`grid grid-cols-1 gap-3 md:grid-cols-2 ${presetAdvisorUserId ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}
+        >
           <div className="min-w-0">
             <Label htmlFor="fb-class">class_id</Label>
             <InputField
@@ -136,15 +152,17 @@ export default function FeedbackListPage() {
               placeholder="ObjectId sinh viên"
             />
           </div>
-          <div className="min-w-0">
-            <Label htmlFor="fb-adv">advisor_user_id</Label>
-            <InputField
-              id="fb-adv"
-              value={draft.advisorId}
-              onChange={e => setDraft(d => ({ ...d, advisorId: e.target.value }))}
-              placeholder="ObjectId cố vấn"
-            />
-          </div>
+          {!presetAdvisorUserId ? (
+            <div className="min-w-0">
+              <Label htmlFor="fb-adv">advisor_user_id</Label>
+              <InputField
+                id="fb-adv"
+                value={draft.advisorId}
+                onChange={e => setDraft(d => ({ ...d, advisorId: e.target.value }))}
+                placeholder="ObjectId cố vấn"
+              />
+            </div>
+          ) : null}
           <div className="min-w-0">
             <Label>Cảm xúc</Label>
             <Select

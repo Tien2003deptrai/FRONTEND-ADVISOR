@@ -9,11 +9,13 @@ import { authService } from '../../services/AuthService'
 import useAuthStore from '../../stores/authStore'
 
 function resolvePostLoginPath(role: string | undefined, from: string) {
-  const isStudent = role === 'STUDENT'
-  const home = isStudent ? '/student' : '/'
+  const home =
+    role === 'STUDENT' ? '/student' : role === 'ADVISOR' ? '/advisor' : '/'
   if (!from || from === '/signin') return home
-  if (isStudent && !from.startsWith('/student')) return '/student'
-  if (!isStudent && from.startsWith('/student')) return '/'
+  if (role === 'STUDENT' && !from.startsWith('/student')) return '/student'
+  if (role === 'ADVISOR' && !from.startsWith('/advisor')) return '/advisor'
+  if (role !== 'STUDENT' && role !== 'ADVISOR' && from.startsWith('/student')) return '/'
+  if ((role === 'FACULTY' || role === 'ADMIN') && from.startsWith('/advisor')) return '/'
   return from
 }
 

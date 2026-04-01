@@ -13,9 +13,16 @@ import {
   FeedbackListPage,
   Home,
 } from './pages/Admin'
+import {
+  AdvisorDashboardPage,
+  AdvisorFeedbackPage,
+  AdvisorMeetingsPage,
+  AdvisorNotificationsPage,
+} from './pages/Advisor'
 import { DashboardPage, AcademicPage, FeedbackPage } from './pages/Student'
 import FormElements from './pages/Forms/FormElements'
 import AppLayout from './layout/AppLayout'
+import AdvisorLayout from './layout/AdvisorLayout'
 import ProtectLayout from './layout/ProtectLayout'
 import { ScrollToTop } from './components/common/ScrollToTop'
 import ProtectRoute from './components/auth/ProtectRoute'
@@ -37,8 +44,20 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* ADVISOR / FACULTY / ADMIN */}
-            <Route element={<ProtectRoute allowedRoles={['ADVISOR', 'FACULTY', 'ADMIN']} />}>
+            {/* ADVISOR */}
+            <Route path="advisor" element={<ProtectRoute allowedRoles={['ADVISOR']} />}>
+              <Route element={<AdvisorLayout />}>
+                <Route index element={<AdvisorDashboardPage />} />
+                <Route path="classes" element={<AdvisorClassPage />} />
+                <Route path="meetings" element={<AdvisorMeetingsPage />} />
+                <Route path="feedback" element={<AdvisorFeedbackPage />} />
+                <Route path="notifications" element={<AdvisorNotificationsPage />} />
+                <Route path="profile" element={<UserProfiles />} />
+              </Route>
+            </Route>
+
+            {/* FACULTY / ADMIN */}
+            <Route element={<ProtectRoute allowedRoles={['FACULTY', 'ADMIN']} />}>
               <Route element={<AppLayout />}>
                 <Route index element={<Home />} />
                 <Route path="faculty-dashboard" element={<FacultyDashboardPage />} />

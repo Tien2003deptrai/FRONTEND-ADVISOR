@@ -819,7 +819,7 @@ export default function AdvisorClassPage() {
       <Modal
         isOpen={addMembersOpen}
         onClose={() => !savingMembers && setAddMembersOpen(false)}
-        className="max-w-lg p-6"
+        className="max-w-lg p-6 h-[700px] max-h-[70vh] overflow-auto"
       >
         <h3 className="mb-4 text-lg font-semibold">Thêm sinh viên vào lớp</h3>
         <p className="mb-3 text-xs text-gray-500">
@@ -838,16 +838,8 @@ export default function AdvisorClassPage() {
             placeholder="Chọn một hoặc nhiều"
           />
         )}
-        <div className="mt-6 flex justify-end gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={savingMembers}
-            onClick={() => setAddMembersOpen(false)}
-          >
-            Hủy
-          </Button>
-          <Button size="sm" disabled={savingMembers} onClick={() => void submitAddMembers()}>
+        <div className="p-5 flex justify-end bottom-0 absolute right-0 gap-2">
+          <Button size="sm" disabled={savingMembers} className='w-[135px]' onClick={() => void submitAddMembers()}>
             {savingMembers ? 'Đang thêm...' : 'Thêm'}
           </Button>
         </div>

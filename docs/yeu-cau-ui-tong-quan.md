@@ -80,3 +80,5 @@ import { useModal } from '@/hooks/useModal'
 ## 5. Cập nhật tài liệu
 
 Khi thêm component UI mới dùng chung được trong `src/components`, có thể bổ sung mục 2 tương ứng để cả team cùng tham chiếu.
+
+## 6. Lưu ý: với Form hãy dùng state + object để quản lý state, lưu ý tách components props không quá 5 props
