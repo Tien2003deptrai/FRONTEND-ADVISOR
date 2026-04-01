@@ -2,13 +2,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import { Modal } from '@/components/ui/modal'
 import Button from '@/components/ui/button/Button'
 import Label from '@/components/form/Label'
 import InputField from '@/components/form/input/InputField'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { dashboardService } from '@/services/DashboardService'
-import { studentService } from '@/services/StudentService'
+import AdvisorClassAnalytics, {
+  type AdvisorClassAnalytics as AdvisorClassAnalyticsData,
+} from './AdvisorClassAnalytics'
+import AdvisorStudentDetailModal from './AdvisorStudentDetailModal'
 
 type Pagination = {
   page: number
@@ -57,11 +59,11 @@ export default function AdvisorDashboardPage() {
   const [rows, setRows] = useState<StudentRow[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [recentAlerts, setRecentAlerts] = useState<AlertItem[]>([])
+  const [classAnalytics, setClassAnalytics] = useState<AdvisorClassAnalyticsData | null>(null)
+  const [noAdvisorClass, setNoAdvisorClass] = useState(false)
 
   const [detailOpen, setDetailOpen] = useState(false)
-  const [detailLoading, setDetailLoading] = useState(false)
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null)
-  const [detailPayload, setDetailPayload] = useState<unknown>(null)
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
@@ -77,16 +79,26 @@ export default function AdvisorDashboardPage() {
         student_table?: StudentRow[]
         recent_alerts?: AlertItem[]
         pagination?: Pagination
+        class_analytics?: AdvisorClassAnalyticsData | null
       }
       setRows(data.student_table ?? [])
       setRecentAlerts(data.recent_alerts ?? [])
       setPagination(data.pagination ?? null)
       setAppliedThreshold(t)
+      if ('class_analytics' in data) {
+        setClassAnalytics(data.class_analytics ?? null)
+        setNoAdvisorClass(data.class_analytics === null)
+      } else {
+        setClassAnalytics(null)
+        setNoAdvisorClass(false)
+      }
     } catch {
       toast.error('Không tải được dashboard cố vấn')
       setRows([])
       setRecentAlerts([])
       setPagination(null)
+      setClassAnalytics(null)
+      setNoAdvisorClass(false)
     } finally {
       setLoading(false)
     }
@@ -101,19 +113,14 @@ export default function AdvisorDashboardPage() {
     setReloadKey(k => k + 1)
   }
 
-  const openStudentDetail = async (studentId: string) => {
+  const openStudentDetail = (studentId: string) => {
     setDetailStudentId(studentId)
     setDetailOpen(true)
-    setDetailPayload(null)
-    setDetailLoading(true)
-    try {
-      const res = await studentService.getStudentById(studentId, {})
-      setDetailPayload(res.data)
-    } catch {
-      toast.error('Không tải được chi tiết sinh viên')
-    } finally {
-      setDetailLoading(false)
-    }
+  }
+
+  const closeStudentDetail = () => {
+    setDetailOpen(false)
+    setDetailStudentId(null)
   }
 
   return (
@@ -148,6 +155,12 @@ export default function AdvisorDashboardPage() {
           <span className="text-xs text-gray-500">Đang áp dụng: {appliedThreshold}</span>
         </div>
       </div>
+
+      <AdvisorClassAnalytics
+        analytics={classAnalytics}
+        noAdvisorClass={noAdvisorClass}
+        appliedThreshold={appliedThreshold}
+      />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="xl:col-span-8">
@@ -220,7 +233,7 @@ export default function AdvisorDashboardPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => void openStudentDetail(row.student_user_id)}
+                                onClick={() => openStudentDetail(row.student_user_id)}
                               >
                                 Chi tiết
                               </Button>
@@ -299,32 +312,11 @@ export default function AdvisorDashboardPage() {
         </div>
       </div>
 
-      <Modal
+      <AdvisorStudentDetailModal
         isOpen={detailOpen}
-        onClose={() => !detailLoading && setDetailOpen(false)}
-        className="max-w-2xl p-6"
-      >
-        <h3 className="mb-4 text-lg font-semibold">
-          Chi tiết sinh viên
-          {detailStudentId ? (
-            <span className="block break-all text-sm font-normal text-gray-500">{detailStudentId}</span>
-          ) : null}
-        </h3>
-        {detailLoading ? (
-          <p className="text-sm text-gray-500">Đang tải...</p>
-        ) : detailPayload && typeof detailPayload === 'object' ? (
-          <pre className="max-h-[60vh] overflow-auto rounded-lg bg-gray-50 p-3 text-xs dark:bg-gray-800/80">
-            {JSON.stringify(detailPayload, null, 2)}
-          </pre>
-        ) : (
-          <p className="text-sm text-gray-500">Không có dữ liệu.</p>
-        )}
-        <div className="mt-6 flex justify-end">
-          <Button size="sm" variant="outline" onClick={() => setDetailOpen(false)}>
-            Đóng
-          </Button>
-        </div>
-      </Modal>
+        studentUserId={detailStudentId}
+        onClose={closeStudentDetail}
+      />
     </>
   )
 }
