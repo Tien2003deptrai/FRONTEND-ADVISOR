@@ -255,7 +255,6 @@ const AppSidebar: React.FC = () => {
             <>
               <div className="flex gap-5 items-center">
                 <img
-                  className="dark:hidden"
                   src="/images/logo/logo-icon.svg"
                   alt="Logo"
                   width={40}
@@ -263,13 +262,6 @@ const AppSidebar: React.FC = () => {
                 />
                 <span className="text-2xl font-semibold text-blue-600">Advisor - AI</span>
               </div>
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-icon.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
             </>
           ) : (
             <img src="/images/logo/logo-icon.svg" alt="Logo" width={32} height={32} />
