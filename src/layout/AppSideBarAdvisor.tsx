@@ -1,18 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { useCallback } from 'react'
+import { Link, useLocation } from 'react-router'
 import {
   AlertIcon,
   CalenderIcon,
   ChatIcon,
-  ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  PlugInIcon,
-  UserIcon,
 } from '../icons'
 import { useSidebar } from '../context/SidebarContext'
-import useAuthStore from '../stores/authStore'
 
 type NavItem = {
   name: string
@@ -29,23 +25,10 @@ const mainNav: NavItem[] = [
   { icon: <AlertIcon />, name: 'Thông báo & cảnh báo', path: '/advisor/notifications' },
 ]
 
-const othersNav: NavItem[] = [
-  {
-    icon: <UserIcon />,
-    name: 'Tài khoản',
-    subItems: [{ name: 'Hồ sơ', path: '/advisor/profile' }],
-  },
-]
 
 const AppSideBarAdvisor: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar()
   const location = useLocation()
-  const navigate = useNavigate()
-  const logout = useAuthStore(s => s.logout)
-
-  const [openSubmenu, setOpenSubmenu] = useState<{ type: 'others'; index: number } | null>(null)
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({})
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const isActive = useCallback(
     (path: string) => {
@@ -57,39 +40,6 @@ const AppSideBarAdvisor: React.FC = () => {
     [location.pathname]
   )
 
-  useEffect(() => {
-    let matched = false
-    othersNav.forEach((nav, index) => {
-      nav.subItems?.forEach(sub => {
-        if (isActive(sub.path)) {
-          setOpenSubmenu({ type: 'others', index })
-          matched = true
-        }
-      })
-    })
-    if (!matched) setOpenSubmenu(null)
-  }, [location.pathname, isActive])
-
-  useEffect(() => {
-    if (openSubmenu !== null) {
-      const key = `others-${openSubmenu.index}`
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight(prev => ({
-          ...prev,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }))
-      }
-    }
-  }, [openSubmenu])
-
-  const handleSubmenuToggle = (index: number) => {
-    setOpenSubmenu(prev => (prev && prev.index === index ? null : { type: 'others', index }))
-  }
-
-  const handleSignOut = () => {
-    logout()
-    navigate('/signin', { replace: true })
-  }
 
   const renderMain = (items: NavItem[]) => (
     <ul className="flex flex-col gap-4">
@@ -109,65 +59,6 @@ const AppSideBarAdvisor: React.FC = () => {
                 <span className="menu-item-text">{nav.name}</span>
               )}
             </Link>
-          ) : null}
-        </li>
-      ))}
-    </ul>
-  )
-
-  const renderOthers = (items: NavItem[]) => (
-    <ul className="flex flex-col gap-4">
-      {items.map((nav, index) => (
-        <li key={nav.name}>
-          {nav.subItems ? (
-            <>
-              <button
-                type="button"
-                onClick={() => handleSubmenuToggle(index)}
-                className={`menu-item group w-full cursor-pointer ${openSubmenu?.index === index ? 'menu-item-active' : 'menu-item-inactive'} ${!isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start'}`}
-              >
-                <span
-                  className={`menu-item-icon-size ${openSubmenu?.index === index ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}`}
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <ChevronDownIcon
-                    className={`ml-auto h-5 w-5 transition-transform duration-200 ${openSubmenu?.index === index ? 'rotate-180 text-brand-500' : ''}`}
-                  />
-                )}
-              </button>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <div
-                  ref={el => {
-                    subMenuRefs.current[`others-${index}`] = el
-                  }}
-                  className="overflow-hidden transition-all duration-300"
-                  style={{
-                    height:
-                      openSubmenu?.index === index
-                        ? `${subMenuHeight[`others-${index}`] ?? 0}px`
-                        : '0px',
-                  }}
-                >
-                  <ul className="ml-9 mt-2 space-y-1">
-                    {nav.subItems.map(sub => (
-                      <li key={sub.path}>
-                        <Link
-                          to={sub.path}
-                          className={`menu-dropdown-item ${isActive(sub.path) ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                        >
-                          {sub.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </>
           ) : null}
         </li>
       ))}
@@ -217,26 +108,6 @@ const AppSideBarAdvisor: React.FC = () => {
                 )}
               </h2>
               {renderMain(mainNav)}
-            </div>
-            <div>
-              <h2
-                className={`mb-4 flex text-xs uppercase leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? 'Khác' : <HorizontaLDots />}
-              </h2>
-              {renderOthers(othersNav)}
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className={`menu-item group menu-item-inactive mt-2 w-full cursor-pointer ${!isExpanded && !isHovered ? 'lg:justify-center' : ''}`}
-              >
-                <span className="menu-item-icon-size menu-item-icon-inactive">
-                  <PlugInIcon className="size-6" />
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">Đăng xuất</span>
-                )}
-              </button>
             </div>
           </div>
         </nav>

@@ -241,10 +241,6 @@ export default function AdvisorDashboardCharts({
 
   return (
     <div className="mb-6 space-y-6">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Số liệu lấy từ <strong>POST /api/dashboard/advisor</strong>: thẻ tổng hợp cảnh báo, biểu đồ
-        theo mức độ nghiêm trọng và phân bố nhãn rủi ro trên trang danh sách hiện tại.
-      </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi title="Sinh viên lớp cố vấn" value={paginationTotal} accent="default" />

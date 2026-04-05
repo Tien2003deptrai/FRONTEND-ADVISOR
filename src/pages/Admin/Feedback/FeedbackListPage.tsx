@@ -4,9 +4,6 @@ import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { Modal } from '@/components/ui/modal'
 import Button from '@/components/ui/button/Button'
-import Label from '@/components/form/Label'
-import InputField from '@/components/form/input/InputField'
-import Select from '@/components/form/Select'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { feedbackService } from '@/services/FeedbackService'
 
@@ -44,12 +41,6 @@ function formatDate(iso?: string): string {
 }
 
 const SENTIMENT_ALL = '__all__'
-const SENTIMENT_OPTIONS = [
-  { value: SENTIMENT_ALL, label: 'Tất cả cảm xúc' },
-  { value: 'POSITIVE', label: 'POSITIVE' },
-  { value: 'NEUTRAL', label: 'NEUTRAL' },
-  { value: 'NEGATIVE', label: 'NEGATIVE' },
-]
 
 const emptyFilters = () => ({
   classId: '',
@@ -70,7 +61,6 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
   const [rows, setRows] = useState<FeedbackRow[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
 
-  const [draft, setDraft] = useState(emptyFilters)
   const [applied, setApplied] = useState(emptyFilters)
 
   const [detailOpen, setDetailOpen] = useState(false)
@@ -105,7 +95,6 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
 
   useEffect(() => {
     if (!presetAdvisorUserId) return
-    setDraft(d => ({ ...d, advisorId: presetAdvisorUserId }))
     setApplied(d => ({ ...d, advisorId: presetAdvisorUserId }))
     setPage(1)
   }, [presetAdvisorUserId])
@@ -113,11 +102,6 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
   const openDetail = (row: FeedbackRow) => {
     setDetailRow(row)
     setDetailOpen(true)
-  }
-
-  const applyFilters = () => {
-    setApplied({ ...draft })
-    setPage(1)
   }
 
   return (
@@ -129,73 +113,6 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
       <PageBreadcrumb
         pageTitle={presetAdvisorUserId ? 'Phản hồi (lớp của tôi)' : 'Phản hồi (danh sách)'}
       />
-
-      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-          Lọc theo lớp, sinh viên, cố vấn hoặc cảm xúc (MongoId phải hợp lệ). API:{' '}
-          <code className="text-xs">POST /feedback/list</code>.
-        </p>
-        <div
-          className={`grid grid-cols-1 gap-3 md:grid-cols-2 ${presetAdvisorUserId ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}
-        >
-          <div className="min-w-0">
-            <Label htmlFor="fb-class">Lớp (mã nội bộ)</Label>
-            <InputField
-              id="fb-class"
-              value={draft.classId}
-              onChange={e => setDraft(d => ({ ...d, classId: e.target.value }))}
-              placeholder="Dán mã lớp từ hệ thống (nếu cần lọc)"
-            />
-          </div>
-          <div className="min-w-0">
-            <Label htmlFor="fb-stu">Sinh viên (mã nội bộ)</Label>
-            <InputField
-              id="fb-stu"
-              value={draft.studentId}
-              onChange={e => setDraft(d => ({ ...d, studentId: e.target.value }))}
-              placeholder="Mã tài khoản sinh viên (nếu cần lọc)"
-            />
-          </div>
-          {!presetAdvisorUserId ? (
-            <div className="min-w-0">
-              <Label htmlFor="fb-adv">Cố vấn (mã nội bộ)</Label>
-              <InputField
-                id="fb-adv"
-                value={draft.advisorId}
-                onChange={e => setDraft(d => ({ ...d, advisorId: e.target.value }))}
-                placeholder="Mã tài khoản cố vấn (nếu cần lọc)"
-              />
-            </div>
-          ) : null}
-          <div className="min-w-0">
-            <Label>Cảm xúc</Label>
-            <Select
-              key={`fb-sent-${draft.sentiment}`}
-              options={SENTIMENT_OPTIONS}
-              placeholder="Chọn cảm xúc"
-              onChange={v => setDraft(d => ({ ...d, sentiment: v }))}
-              defaultValue={draft.sentiment}
-            />
-          </div>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" onClick={applyFilters}>
-            Áp dụng lọc
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              const z = emptyFilters()
-              setDraft(z)
-              setApplied(z)
-              setPage(1)
-            }}
-          >
-            Xóa lọc
-          </Button>
-        </div>
-      </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
         {loading ? (

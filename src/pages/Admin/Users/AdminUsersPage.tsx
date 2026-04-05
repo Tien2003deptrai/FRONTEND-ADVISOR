@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -267,22 +266,6 @@ export default function AdminUsersPage() {
         description="Tạo tài khoản cố vấn và sinh viên (admin-provisioning-flow)"
       />
       <PageBreadcrumb pageTitle="Cố vấn & sinh viên" />
-
-      <div className="mb-6 rounded-lg border border-brand-200 bg-brand-50/80 p-4 text-sm dark:border-brand-900 dark:bg-brand-950/30">
-        <p className="text-gray-800 dark:text-white/90">
-          Tạo <strong>cố vấn</strong> và <strong>sinh viên</strong> phải kèm{' '}
-          <strong>cùng lúc</strong> <code className="text-xs">org.department_id</code> và{' '}
-          <code className="text-xs">org.major_id</code> để sau này tạo lớp cố vấn không bị lỗi. Khi
-          xong, chuyển tới{' '}
-          <Link
-            to="/advisor-classes"
-            className="font-medium text-brand-600 underline dark:text-brand-400"
-          >
-            Lớp & thành viên
-          </Link>
-          .
-        </p>
-      </div>
 
       <div className="space-y-6">
         <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">

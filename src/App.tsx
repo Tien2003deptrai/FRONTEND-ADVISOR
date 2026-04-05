@@ -9,7 +9,6 @@ import {
   MasterDataPage,
   AdvisorClassPage,
   AdminUsersPage,
-  FacultyDashboardPage,
   FeedbackListPage,
   Home,
 } from './pages/Admin'
@@ -66,12 +65,11 @@ export default function App() {
             <Route element={<ProtectRoute allowedRoles={['FACULTY', 'ADMIN']} />}>
               <Route element={<AppLayout />}>
                 <Route index element={<Home />} />
-                <Route path="faculty-dashboard" element={<FacultyDashboardPage />} />
                 <Route path="feedback-list" element={<FeedbackListPage />} />
 
                 <Route path="profile" element={<UserProfiles />} />
                 <Route path="master-data" element={<MasterDataPage />} />
-                <Route path="advisor-classes" element={<AdvisorClassPage />} />
+                {/* <Route path="advisor-classes" element={<AdvisorClassPage />} /> */}
 
                 <Route path="form-elements" element={<FormElements />} />
 

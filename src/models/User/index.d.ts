@@ -11,6 +11,9 @@ interface User {
   }
   profile?: {
     full_name?: string
+    phone?: string
+    address?: string
+    avatar_url?: string
   }
 }
 

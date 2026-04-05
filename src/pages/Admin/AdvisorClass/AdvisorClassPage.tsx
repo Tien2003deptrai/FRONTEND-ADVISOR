@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components
 import { advisorClassService } from '@/services/AdvisorClassService'
 import { classMemberService } from '@/services/ClassMemberService'
 import { userService } from '@/services/UserService'
+import { studentService } from '@/services/StudentService'
 import { masterDataService } from '@/services/MasterDataService'
 import useAuthStore from '@/stores/authStore'
 
@@ -135,6 +136,7 @@ export default function AdvisorClassPage() {
   const [savingMembers, setSavingMembers] = useState(false)
   const [studentOptions, setStudentOptions] = useState<{ value: string; text: string }[]>([])
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
+  const [addModalMemberTotal, setAddModalMemberTotal] = useState<number | null>(null)
 
   const selectedAdvisor = useMemo(
     () => advisors.find(a => a._id === selectedAdvisorId),
@@ -372,16 +374,39 @@ export default function AdvisorClassPage() {
       toast.error('Chưa có lớp — tạo lớp ở tab Lớp cố vấn trước')
       return
     }
+    const advisorIdForApi = isAdmin ? selectedAdvisorId : authUser?._id ? String(authUser._id) : ''
+    if (!advisorIdForApi) {
+      toast.error(
+        isAdmin ? 'Chọn cố vấn và đảm bảo đã tải lớp của cố vấn đó' : 'Không xác định được tài khoản cố vấn'
+      )
+      return
+    }
+    if (advisorClass && String(advisorClass.advisor_user_id) !== String(advisorIdForApi)) {
+      toast.error('Lớp hiện tại không khớp cố vấn. Hãy chọn lại cố vấn hoặc tải lại trang.')
+      return
+    }
     setSelectedStudentIds([])
+    setAddModalMemberTotal(null)
     setLoadingLists(true)
     try {
-      const res = await userService.getUsers({ role: 'STUDENT', limit: 100, page: 1 })
-      const data = res.data as { items: UserItem[] }
-      let studs = data.items ?? []
-      if (advisorClass?.department_id) {
-        const did = normalizeRefId(advisorClass.department_id)
-        studs = studs.filter(s => normalizeRefId(s.org?.department_id) === did)
-      }
+      const memberBody: Record<string, unknown> = { page: 1, limit: 1 }
+      if (isAdmin) memberBody.class_id = currentClassId
+
+      const [memRes, studRes] = await Promise.all([
+        classMemberService.listMembers(memberBody),
+        studentService.listStudents({
+          page: 1,
+          limit: 100,
+          class_id: currentClassId,
+          advisor_user_id: advisorIdForApi,
+        }),
+      ])
+
+      const memData = memRes.data as { pagination?: { total?: number } }
+      setAddModalMemberTotal(memData.pagination?.total ?? 0)
+
+      const studData = studRes.data as { items?: UserItem[] }
+      const studs = studData.items ?? []
       setStudentOptions(
         studs.map(s => ({
           value: s._id,
@@ -390,7 +415,7 @@ export default function AdvisorClassPage() {
       )
       setAddMembersOpen(true)
     } catch {
-      toast.error('Đã có lỗi xảy ra')
+      toast.error('Không tải được danh sách sinh viên phù hợp lớp')
     } finally {
       setLoadingLists(false)
     }
@@ -477,12 +502,6 @@ export default function AdvisorClassPage() {
               Thành viên lớp
             </button>
           </div>
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-            API: <code className="text-xs">POST /api/advisor-classes</code> (ADMIN, tạo/cập nhật),{' '}
-            <code className="text-xs">POST /api/advisor-classes/my</code> (xem lớp),{' '}
-            <code className="text-xs">POST /api/class-members/list</code>,{' '}
-            <code className="text-xs">/add</code>. Chi tiết: <code>docs/admin-apis.md</code>.
-          </p>
         </div>
 
         {tab === 'class' && (
@@ -819,12 +838,41 @@ export default function AdvisorClassPage() {
       <Modal
         isOpen={addMembersOpen}
         onClose={() => !savingMembers && setAddMembersOpen(false)}
-        className="max-w-lg p-6 h-[700px] max-h-[70vh] overflow-auto"
+        className="relative max-h-[70vh] max-w-lg overflow-auto p-6"
       >
-        <h3 className="mb-4 text-lg font-semibold">Thêm sinh viên vào lớp</h3>
-        <p className="mb-3 text-xs text-gray-500">
-          Chỉ sinh viên đúng khoa (và ngành nếu lớp có ngành) mới được backend chấp nhận. Danh sách
-          đã lọc sơ theo khoa của lớp.
+        <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white/90">
+          Thêm sinh viên vào lớp
+        </h3>
+        {advisorClass ? (
+          <div className="mb-4 rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-white/5 dark:text-gray-300">
+            <p>
+              <span className="text-gray-500 dark:text-gray-400">Lớp: </span>
+              <span className="font-medium text-gray-900 dark:text-white/90">
+                {advisorClass.class_code}
+                {advisorClass.class_name ? ` — ${advisorClass.class_name}` : ''}
+              </span>
+            </p>
+            <p className="mt-1">
+              <span className="text-gray-500 dark:text-gray-400">Cố vấn: </span>
+              <span className="font-medium">
+                {selectedAdvisor?.profile?.full_name ??
+                  selectedAdvisor?.username ??
+                  (isAdvisor ? authUser?.profile?.full_name ?? authUser?.username : '—')}
+              </span>
+            </p>
+            {addModalMemberTotal != null ? (
+              <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                Đang có <strong>{addModalMemberTotal}</strong> thành viên trong lớp (xem đầy đủ ở tab
+                «Thành viên lớp»). Chỉ hiển thị sinh viên còn có thể thêm (đúng khoa/ngành, chưa thuộc lớp
+                ACTIVE khác, chưa ACTIVE trong lớp này).
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+        <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+          Danh sách lấy từ API <code className="rounded bg-gray-100 px-1 text-[10px] dark:bg-gray-800">POST /students</code> kèm{' '}
+          <code className="rounded bg-gray-100 px-1 text-[10px] dark:bg-gray-800">class_id</code> và{' '}
+          <code className="rounded bg-gray-100 px-1 text-[10px] dark:bg-gray-800">advisor_user_id</code>.
         </p>
         {loadingLists ? (
           <p className="text-sm text-gray-500">Đang tải danh sách sinh viên...</p>
@@ -838,8 +886,16 @@ export default function AdvisorClassPage() {
             placeholder="Chọn một hoặc nhiều"
           />
         )}
-        <div className="p-5 flex justify-end bottom-0 absolute right-0 gap-2">
-          <Button size="sm" disabled={savingMembers} className='w-[135px]' onClick={() => void submitAddMembers()}>
+        <div className="mt-6 flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={savingMembers}
+            onClick={() => setAddMembersOpen(false)}
+          >
+            Hủy
+          </Button>
+          <Button size="sm" disabled={savingMembers} className="min-w-[120px]" onClick={() => void submitAddMembers()}>
             {savingMembers ? 'Đang thêm...' : 'Thêm'}
           </Button>
         </div>

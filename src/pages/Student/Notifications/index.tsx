@@ -2,10 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import { Modal } from '@/components/ui/modal'
 import Button from '@/components/ui/button/Button'
-import Label from '@/components/form/Label'
-import InputField from '@/components/form/input/InputField'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { notificationService } from '@/services/NotificationService'
 
@@ -18,11 +15,31 @@ type Pagination = {
 
 type NotifRow = {
   _id: string
-  type?: string
   title?: string
   content?: string
   sent_at?: string
   is_read?: boolean
+  alert_id?: {
+    alert_type?: string
+    term_id?: { term_code?: string; term_name?: string } | string | null
+  } | string | null
+}
+
+function termLabelFromRow(row: NotifRow): string {
+  const a = row.alert_id
+  if (!a || typeof a !== 'object') return '—'
+  const t = a.term_id
+  if (t && typeof t === 'object') {
+    const parts = [t.term_code, t.term_name].filter(Boolean)
+    if (parts.length) return parts.join(' — ')
+  }
+  return '—'
+}
+
+function alertTypeLabel(row: NotifRow): string {
+  const a = row.alert_id
+  if (a && typeof a === 'object' && a.alert_type) return a.alert_type
+  return '—'
 }
 
 function formatDt(iso?: string): string {
@@ -34,18 +51,13 @@ function formatDt(iso?: string): string {
   }
 }
 
-export default function AdvisorNotificationsPage() {
+export default function StudentNotificationsPage() {
   const [page, setPage] = useState(1)
   const limit = 20
   const [listKey, setListKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<NotifRow[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
-
-  const [genOpen, setGenOpen] = useState(false)
-  const [genLoading, setGenLoading] = useState(false)
-  const [riskThreshold, setRiskThreshold] = useState('0.7')
-  const [negativeDays, setNegativeDays] = useState('30')
 
   const loadList = useCallback(async () => {
     setLoading(true)
@@ -61,46 +73,27 @@ export default function AdvisorNotificationsPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, limit, listKey])
+  }, [page, limit])
 
   useEffect(() => {
     void loadList()
-  }, [loadList])
-
-  const submitGenerate = async () => {
-    const rt = Number.parseFloat(riskThreshold)
-    const nd = Number.parseInt(negativeDays, 10)
-    const body: Record<string, unknown> = {}
-    if (Number.isFinite(rt)) body.risk_threshold = Math.min(1, Math.max(0, rt))
-    if (Number.isFinite(nd)) body.negative_days = Math.min(180, Math.max(1, nd))
-
-    setGenLoading(true)
-    try {
-      const res = await notificationService.generateAlerts(body)
-      const d = res.data as { created_count?: number } | undefined
-      toast.success(
-        res.message ||
-          `Đã xử lý tạo cảnh báo${d?.created_count != null ? ` (${d.created_count})` : ''}`
-      )
-      setGenOpen(false)
-      setPage(1)
-      setListKey(k => k + 1)
-    } catch {
-      toast.error('Không chạy được generate')
-    } finally {
-      setGenLoading(false)
-    }
-  }
+  }, [loadList, listKey])
 
   return (
     <>
-      <PageMeta
-        title="Thông báo | Advisor"
-        description="POST /api/notification/list và /notification/generate"
-      />
-      <PageBreadcrumb pageTitle="Thông báo & cảnh báo" />
+      <PageMeta title="Thông báo | Sinh viên" description="Thông báo và cảnh báo dành cho bạn" />
+      <PageBreadcrumb pageTitle="Thông báo" />
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          Cảnh báo rủi ro, cảm xúc và thông tin hệ thống gửi đến tài khoản của bạn.
+        </p>
+        <Button size="sm" variant="outline" onClick={() => setListKey(k => k + 1)} disabled={loading}>
+          Làm mới
+        </Button>
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
         {loading ? (
           <p className="py-8 text-gray-500">Đang tải...</p>
         ) : (
@@ -115,6 +108,9 @@ export default function AdvisorNotificationsPage() {
                     Loại
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
+                    Học kỳ
+                  </TableCell>
+                  <TableCell isHeader className="px-3 py-2 font-semibold">
                     Tiêu đề
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
@@ -125,7 +121,7 @@ export default function AdvisorNotificationsPage() {
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <td className="px-3 py-8 text-gray-500" colSpan={4}>
+                    <td className="px-3 py-8 text-gray-500" colSpan={5}>
                       Không có thông báo.
                     </td>
                   </TableRow>
@@ -135,7 +131,8 @@ export default function AdvisorNotificationsPage() {
                       <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
                         {formatDt(row.sent_at)}
                       </TableCell>
-                      <TableCell className="px-3 py-2">{row.type ?? '—'}</TableCell>
+                      <TableCell className="px-3 py-2">{alertTypeLabel(row)}</TableCell>
+                      <TableCell className="px-3 py-2">{termLabelFromRow(row)}</TableCell>
                       <TableCell className="max-w-md px-3 py-2">
                         <div className="font-medium text-gray-800 dark:text-white/90">
                           {row.title ?? '—'}
@@ -178,53 +175,6 @@ export default function AdvisorNotificationsPage() {
           </>
         )}
       </div>
-
-      <Modal
-        isOpen={genOpen}
-        onClose={() => !genLoading && setGenOpen(false)}
-        className="max-w-md p-6"
-      >
-        <h3 className="mb-2 text-lg font-semibold">Tạo / làm mới cảnh báo</h3>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          Gọi <code className="text-xs">POST /notification/generate</code> trong phạm vi lớp của bạn
-          (theo token). Có thể tinh chỉnh ngưỡng rủi ro và số ngày phản hồi tiêu cực.
-        </p>
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="n-risk">risk_threshold (0–1)</Label>
-            <InputField
-              id="n-risk"
-              type="number"
-              step={0.05}
-              min="0"
-              max="1"
-              value={riskThreshold}
-              onChange={e => setRiskThreshold(e.target.value)}
-              disabled={genLoading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="n-days">negative_days (1–180)</Label>
-            <InputField
-              id="n-days"
-              type="number"
-              min="1"
-              max="180"
-              value={negativeDays}
-              onChange={e => setNegativeDays(e.target.value)}
-              disabled={genLoading}
-            />
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={genLoading} onClick={() => setGenOpen(false)}>
-            Hủy
-          </Button>
-          <Button size="sm" disabled={genLoading} onClick={() => void submitGenerate()}>
-            {genLoading ? 'Đang chạy...' : 'Xác nhận chạy'}
-          </Button>
-        </div>
-      </Modal>
     </>
   )
 }

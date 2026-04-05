@@ -7,6 +7,7 @@ type AuthState = {
   token: string | null
   refreshToken: string | null
   login: (user: User, accessToken: string, refreshToken?: string | null) => void
+  setUser: (user: User) => void
   logout: () => void
 }
 
@@ -24,6 +25,7 @@ const useAuthStore = create<AuthState>()(
           token: accessToken,
           refreshToken: refreshToken ?? null,
         }),
+      setUser: user => set({ user }),
       logout: () => set({ isAuthenticated: false, user: null, token: null, refreshToken: null }),
     }),
     {

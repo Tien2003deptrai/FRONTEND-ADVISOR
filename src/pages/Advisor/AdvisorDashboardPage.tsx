@@ -3,8 +3,6 @@ import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import Button from '@/components/ui/button/Button'
-import Label from '@/components/form/Label'
-import InputField from '@/components/form/input/InputField'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table'
 import { dashboardService } from '@/services/DashboardService'
 import AdvisorDashboardCharts, {
@@ -73,9 +71,7 @@ function formatDt(iso?: string): string {
 export default function AdvisorDashboardPage() {
   const [page, setPage] = useState(1)
   const limit = 20
-  const [riskThreshold, setRiskThreshold] = useState('0.7')
-  const [appliedThreshold, setAppliedThreshold] = useState(0.7)
-  const [reloadKey, setReloadKey] = useState(0)
+  const riskThreshold = '0.7'
 
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<StudentRow[]>([])
@@ -110,7 +106,6 @@ export default function AdvisorDashboardPage() {
       setRows(data.student_table ?? [])
       setRecentAlerts(data.recent_alerts ?? [])
       setPagination(data.pagination ?? null)
-      setAppliedThreshold(t)
       setAlertCards(data.alert_cards ?? null)
       setRiskAlerts(data.risk_alerts ?? [])
       setSentimentAlerts(data.sentiment_alerts ?? [])
@@ -132,16 +127,11 @@ export default function AdvisorDashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, limit, riskThreshold])
+  }, [page, limit])
 
   useEffect(() => {
     void loadDashboard()
-  }, [loadDashboard, reloadKey])
-
-  const applyThreshold = () => {
-    setPage(1)
-    setReloadKey(k => k + 1)
-  }
+  }, [loadDashboard])
 
   const openStudentDetail = (studentId: string) => {
     setDetailStudentId(studentId)
@@ -164,33 +154,6 @@ export default function AdvisorDashboardPage() {
       />
       <PageBreadcrumb pageTitle="Tổng quan rủi ro (cố vấn)" />
 
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
-        <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-          Điều chỉnh ngưỡng rủi ro (0–1) để hệ thống ưu tiên cảnh báo phù hợp. Mỗi lần tải lại, backend có
-          thể đồng bộ thông báo theo ngưỡng bạn chọn.
-        </p>
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-44">
-            <Label htmlFor="adv-risk-th">Ngưỡng rủi ro (0–1)</Label>
-            <InputField
-              id="adv-risk-th"
-              step={0.05}
-              min="0"
-              max="1"
-              type="number"
-              value={riskThreshold}
-              onChange={e => setRiskThreshold(e.target.value)}
-            />
-          </div>
-          <Button size="sm" onClick={applyThreshold}>
-            Áp dụng & tải lại
-          </Button>
-          <span className="text-xs text-gray-600 dark:text-gray-400">
-            Đang áp dụng: <span className="font-medium text-gray-800 dark:text-gray-200">{appliedThreshold}</span>
-          </span>
-        </div>
-      </div>
-
       <AdvisorDashboardCharts
         studentTable={rows}
         alertCards={alertCards}
@@ -203,7 +166,7 @@ export default function AdvisorDashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="xl:col-span-8">
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
             <h2 className="mb-4 border-b border-gray-100 pb-3 text-lg font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
               Danh sách sinh viên (lớp cố vấn)
             </h2>
@@ -316,7 +279,7 @@ export default function AdvisorDashboardPage() {
         </div>
 
         <div className="xl:col-span-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
             <h2 className="mb-4 border-b border-gray-100 pb-3 text-lg font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
               Cảnh báo gần đây
             </h2>
@@ -327,12 +290,21 @@ export default function AdvisorDashboardPage() {
                 {recentAlerts.map(a => (
                   <li
                     key={a._id}
-                    className="rounded-lg border border-gray-100 p-3 transition-colors duration-200 hover:border-gray-200 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-white/[0.04]"
+                    className="rounded-lg border border-gray-100 p-3 transition-colors duration-200 hover:border-gray-200 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-white/4"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-medium text-gray-800 dark:text-white/90">
-                        {a.title ?? a.type ?? 'Thông báo'}
-                      </span>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-medium text-gray-800 dark:text-white/90">
+                          {a.title ?? a.alert_id?.alert_type ?? 'Thông báo'}
+                        </span>
+                        {a.alert_id?.severity ? (
+                          <span
+                            className={`ml-2 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium uppercase ${severityBadgeClass(a.alert_id.severity)}`}
+                          >
+                            {a.alert_id.severity}
+                          </span>
+                        ) : null}
+                      </div>
                       {!a.is_read ? (
                         <span className="shrink-0 rounded bg-brand-500/15 px-1.5 py-0.5 text-xs text-brand-600">
                           Mới

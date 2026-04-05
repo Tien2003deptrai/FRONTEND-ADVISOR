@@ -6,10 +6,8 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
   TableIcon,
   UserCircleIcon,
-  UserIcon,
 } from '../icons'
 import { useSidebar } from '../context/SidebarContext'
 
@@ -39,29 +37,24 @@ const navItems: NavItem[] = [
     name: 'Quản lý người dùng',
     icon: <UserCircleIcon />,
     subItems: [{ name: 'Cố vấn & sinh viên', path: '/admin-users', pro: false }],
-  },
-  {
-    icon: <ListIcon />,
-    name: 'Lớp & thành viên',
-    path: '/advisor-classes',
-  },
+  }
 ]
 
-const othersItems: NavItem[] = [
-  {
-    icon: <UserIcon />,
-    name: 'User',
-    subItems: [
-      { name: 'Thông tin cá nhân', path: '/profile', pro: false },
-      { name: 'Đăng xuất', path: '/signout', pro: false },
-    ],
-  },
-  {
-    name: 'Forms Demo',
-    icon: <ListIcon />,
-    subItems: [{ name: 'Form Elements', path: '/form-elements', pro: false }],
-  },
-]
+// const othersItems: NavItem[] = [
+//   {
+//     icon: <UserIcon />,
+//     name: 'User',
+//     subItems: [
+//       { name: 'Thông tin cá nhân', path: '/profile', pro: false },
+//       { name: 'Đăng xuất', path: '/signout', pro: false },
+//     ],
+//   },
+//   {
+//     name: 'Forms Demo',
+//     icon: <ListIcon />,
+//     subItems: [{ name: 'Form Elements', path: '/form-elements', pro: false }],
+//   },
+// ]
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar()
@@ -80,7 +73,7 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     let submenuMatched = false
     ;['main', 'others'].forEach(menuType => {
-      const items = menuType === 'main' ? navItems : othersItems
+      const items = menuType === 'main' ? navItems : []
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach(subItem => {
@@ -284,16 +277,6 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(navItems, 'main')}
-            </div>
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? 'Others' : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(othersItems, 'others')}
             </div>
           </div>
         </nav>

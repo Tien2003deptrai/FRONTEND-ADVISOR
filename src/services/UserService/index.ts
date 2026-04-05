@@ -19,6 +19,20 @@ class UserService {
     const response = await this.api.post('/users/info', body)
     return response.data
   }
+
+  /** POST /users/me — текущий пользователь по JWT (все роли) */
+  getMe = async (): Promise<ApiResponse<User>> => {
+    const response = await this.api.post('/users/me', {})
+    return response.data
+  }
+
+  /** POST /users/me/update — обновить профиль (full_name, phone, address) */
+  updateMyProfile = async (body: {
+    profile: { full_name?: string; phone?: string; address?: string }
+  }): Promise<ApiResponse<User>> => {
+    const response = await this.api.post('/users/me/update', body)
+    return response.data
+  }
 }
 
 export const userService = new UserService()
