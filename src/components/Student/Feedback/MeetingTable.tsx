@@ -14,7 +14,7 @@ export default function MeetingHintsTable({ meetingHints, onFeedback }: Props) {
         <TableHeader>
           <TableRow className="border-b border-gray-200 dark:border-gray-700">
             <TableCell isHeader className="px-3 py-2 font-semibold">
-              meeting_id
+              Buổi họp
             </TableCell>
             <TableCell isHeader className="px-3 py-2 font-semibold">
               Lớp cố vấn
@@ -49,10 +49,12 @@ export default function MeetingHintsTable({ meetingHints, onFeedback }: Props) {
                 key={row.meeting_id}
                 className="border-b border-gray-100 dark:border-gray-800"
               >
-                <TableCell className="max-w-[180px] truncate px-3 py-2 font-mono text-xs">
-                  {row.meeting_id}
+                <TableCell className="max-w-[220px] px-3 py-2 text-sm text-gray-800 dark:text-gray-200">
+                  {row.meeting_time
+                    ? new Date(row.meeting_time).toLocaleString('vi-VN')
+                    : '—'}
                 </TableCell>
-                <TableCell className="max-w-[180px] truncate px-3 py-2 font-mono text-xs">
+                <TableCell className="max-w-[200px] px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
                   {row.class_label}
                 </TableCell>
                 <TableCell className="max-w-[260px] truncate px-3 py-2 text-xs">

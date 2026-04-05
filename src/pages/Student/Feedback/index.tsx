@@ -119,19 +119,18 @@ export default function FeedbackPage() {
       <PageMeta title="Phản hồi | Sinh viên" description="Gửi và xem phản hồi SHCVHT" />
       <PageBreadcrumb pageTitle="Phản hồi" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Danh sách: <code className="text-xs">POST /feedback/list</code> (lọc theo tài khoản). Gửi
-          mới: <code className="text-xs">POST /feedback</code> — form trong modal.
+      <div className="mb-6">
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          Gửi phản hồi sau buổi họp SHCVHT và xem lại lịch sử đã gửi.
         </p>
       </div>
 
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-        <h2 className="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">
-          Lớp cố vấn & meeting của tôi
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+        <h2 className="mb-1 border-b border-gray-100 pb-3 text-base font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
+          Lớp cố vấn & buổi họp
         </h2>
-        <p className="mb-3 text-xs text-gray-500">
-          Danh sách lấy từ API <code>POST /meeting/my</code> theo tài khoản STUDENT.
+        <p className="mb-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
+          Chọn buổi họp theo thời gian, sau đó bấm «Gửi feedback».
         </p>
         <MeetingTable
           meetingHints={meetingHints}
@@ -139,7 +138,10 @@ export default function FeedbackPage() {
         />
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+        <h2 className="mb-4 border-b border-gray-100 pb-3 text-base font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
+          Phản hồi đã gửi
+        </h2>
         {loading ? (
           <p className="text-gray-500">Đang tải...</p>
         ) : (
@@ -149,6 +151,9 @@ export default function FeedbackPage() {
                 <TableRow className="border-b border-gray-200 dark:border-gray-700">
                   <TableCell isHeader className="px-3 py-2 font-semibold">
                     Thời gian
+                  </TableCell>
+                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                    Lớp / Cố vấn
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
                     Cảm xúc
@@ -167,7 +172,7 @@ export default function FeedbackPage() {
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <td className="px-3 py-6 text-gray-500" colSpan={5}>
+                    <td className="px-3 py-6 text-gray-500" colSpan={6}>
                       Chưa có phản hồi.
                     </td>
                   </TableRow>
@@ -181,6 +186,12 @@ export default function FeedbackPage() {
                         {row.submitted_at
                           ? new Date(row.submitted_at).toLocaleString('vi-VN')
                           : '—'}
+                      </TableCell>
+                      <TableCell className="max-w-[200px] px-3 py-2 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="line-clamp-2">{row.class_display || '—'}</div>
+                        <div className="mt-0.5 line-clamp-1 text-gray-500">
+                          {row.advisor_display || '—'}
+                        </div>
                       </TableCell>
                       <TableCell className="px-3 py-2">{row.sentiment_label ?? '—'}</TableCell>
                       <TableCell className="px-3 py-2">{row.rating ?? '—'}</TableCell>
@@ -228,20 +239,44 @@ export default function FeedbackPage() {
       </div>
 
       <Modal isOpen={detailOpen} onClose={() => setDetailOpen(false)} className="max-w-xl p-6">
-        <h3 className="mb-3 text-lg font-semibold">Chi tiết phản hồi</h3>
+        <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white/90">
+          Chi tiết phản hồi
+        </h3>
         {detailRow && (
-          <dl className="space-y-2 text-sm">
+          <dl className="space-y-3 text-sm">
             <div>
-              <dt className="font-medium text-gray-500">ID</dt>
-              <dd className="break-all">{detailRow._id}</dd>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Buổi họp
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-gray-200">
+                {detailRow.meeting_time
+                  ? new Date(detailRow.meeting_time).toLocaleString('vi-VN')
+                  : '—'}
+              </dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-500">meeting_id</dt>
-              <dd className="break-all">{String(detailRow.meeting_id ?? '—')}</dd>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Lớp cố vấn
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-gray-200">
+                {detailRow.class_display || '—'}
+              </dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-500">Nội dung</dt>
-              <dd className="whitespace-pre-wrap">{detailRow.feedback_text}</dd>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Cố vấn
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-gray-200">
+                {detailRow.advisor_display || '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Nội dung
+              </dt>
+              <dd className="mt-1 whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+                {detailRow.feedback_text}
+              </dd>
             </div>
           </dl>
         )}

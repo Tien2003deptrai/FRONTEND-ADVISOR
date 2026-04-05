@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components
 import { dashboardService } from '@/services/DashboardService'
 
 type AcademicRow = {
-  term_id?: string | { _id?: string }
+  term_id?: string | { _id?: string; term_code?: string; term_name?: string }
   gpa_prev_sem?: number | null
   gpa_current?: number | null
   num_failed?: number | null
@@ -31,6 +31,15 @@ type StudentDashboardData = {
   risk_term_code?: string | null
   academic_trend: AcademicRow[]
   sentiment_trend: SentimentAgg[]
+}
+
+function termLabel(row: AcademicRow): string {
+  const t = row.term_id
+  if (t && typeof t === 'object') {
+    const parts = [t.term_code, t.term_name].filter(Boolean)
+    if (parts.length) return parts.join(' — ')
+  }
+  return '—'
 }
 
 export default function DashboardPage() {
@@ -119,9 +128,9 @@ export default function DashboardPage() {
       <PageBreadcrumb pageTitle="Dashboard sinh viên" />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Dữ liệu từ <code className="text-xs">POST /dashboard/student</code>. Chi tiết nộp học tập
-          / phản hồi / thông báo xem các mục menu tương ứng.
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          Tổng quan rủi ro, điểm học tập và phản hồi của bạn. Dùng menu để nộp học tập, gửi phản hồi
+          hoặc xem thông báo.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
@@ -148,26 +157,26 @@ export default function DashboardPage() {
       ) : (
         <>
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-              <p className="text-xs font-medium text-gray-500">Risk score</p>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Điểm rủi ro (0–1)</p>
               <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                 {data?.risk_score != null ? data.risk_score.toFixed(3) : '—'}
               </p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-              <p className="text-xs font-medium text-gray-500">Nhãn rủi ro</p>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Mức rủi ro</p>
               <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
                 {data?.risk_label ?? '—'}
               </p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-              <p className="text-xs font-medium text-gray-500">Mã học kỳ (risk)</p>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Học kỳ (dự báo rủi ro)</p>
               <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
                 {data?.risk_term_code ?? '—'}
               </p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-              <p className="text-xs font-medium text-gray-500">Số điểm học tập (bảng)</p>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Số lần ghi nhận học tập</p>
               <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                 {data?.academic_trend?.length ?? 0}
               </p>
@@ -216,6 +225,9 @@ export default function DashboardPage() {
                 <TableHeader>
                   <TableRow className="border-b border-gray-200 dark:border-gray-700">
                     <TableCell isHeader className="px-3 py-2 font-semibold">
+                      Học kỳ
+                    </TableCell>
+                    <TableCell isHeader className="px-3 py-2 font-semibold">
                       Ghi nhận
                     </TableCell>
                     <TableCell isHeader className="px-3 py-2 font-semibold">
@@ -231,14 +243,14 @@ export default function DashboardPage() {
                       Môn trượt
                     </TableCell>
                     <TableCell isHeader className="px-3 py-2 font-semibold">
-                      Sentiment (tính)
+                      Cảm xúc (điểm)
                     </TableCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {(data?.academic_trend ?? []).length === 0 ? (
                     <TableRow>
-                      <td className="px-3 py-4 text-gray-500" colSpan={6}>
+                      <td className="px-3 py-4 text-gray-500" colSpan={7}>
                         Chưa có bản ghi.
                       </td>
                     </TableRow>
@@ -254,6 +266,9 @@ export default function DashboardPage() {
                           key={`${row.recorded_at}-${idx}`}
                           className="border-b border-gray-100 dark:border-gray-800"
                         >
+                          <TableCell className="px-3 py-2 text-sm text-gray-800 dark:text-gray-200">
+                            {termLabel(row)}
+                          </TableCell>
                           <TableCell className="px-3 py-2 whitespace-nowrap text-xs">
                             {row.recorded_at
                               ? new Date(row.recorded_at).toLocaleString('vi-VN')

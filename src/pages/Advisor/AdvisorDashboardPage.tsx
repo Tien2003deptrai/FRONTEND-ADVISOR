@@ -164,16 +164,14 @@ export default function AdvisorDashboardPage() {
       />
       <PageBreadcrumb pageTitle="Tổng quan rủi ro (cố vấn)" />
 
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-          Tham số <code className="text-xs">risk_threshold</code> (0–1) được gửi kèm request — backend có
-          thể dùng trong tương lai. Hiện dữ liệu biểu đồ lấy trực tiếp từ{' '}
-          <code className="text-xs">alert_cards</code>, <code className="text-xs">risk_alerts</code>,{' '}
-          <code className="text-xs">sentiment_alerts</code> và bảng sinh viên.
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+        <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          Điều chỉnh ngưỡng rủi ro (0–1) để hệ thống ưu tiên cảnh báo phù hợp. Mỗi lần tải lại, backend có
+          thể đồng bộ thông báo theo ngưỡng bạn chọn.
         </p>
         <div className="flex flex-wrap items-end gap-3">
-          <div className="w-40">
-            <Label htmlFor="adv-risk-th">risk_threshold</Label>
+          <div className="w-44">
+            <Label htmlFor="adv-risk-th">Ngưỡng rủi ro (0–1)</Label>
             <InputField
               id="adv-risk-th"
               step={0.05}
@@ -187,7 +185,9 @@ export default function AdvisorDashboardPage() {
           <Button size="sm" onClick={applyThreshold}>
             Áp dụng & tải lại
           </Button>
-          <span className="text-xs text-gray-500">Đang gửi: {appliedThreshold}</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">
+            Đang áp dụng: <span className="font-medium text-gray-800 dark:text-gray-200">{appliedThreshold}</span>
+          </span>
         </div>
       </div>
 
@@ -203,8 +203,8 @@ export default function AdvisorDashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="xl:col-span-8">
-          <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-            <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+            <h2 className="mb-4 border-b border-gray-100 pb-3 text-lg font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
               Danh sách sinh viên (lớp cố vấn)
             </h2>
             {loading ? (
@@ -316,64 +316,37 @@ export default function AdvisorDashboardPage() {
         </div>
 
         <div className="xl:col-span-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-            <h2 className="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+            <h2 className="mb-4 border-b border-gray-100 pb-3 text-lg font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
               Cảnh báo gần đây
             </h2>
             {recentAlerts.length === 0 ? (
               <p className="text-sm text-gray-500">Chưa có bản ghi.</p>
             ) : (
               <ul className="max-h-[480px] space-y-3 overflow-y-auto text-sm">
-                {recentAlerts.map(a => {
-                  const al = a.alert_id
-                  return (
-                    <li
-                      key={a._id}
-                      className="rounded-lg border border-gray-100 p-3 dark:border-gray-800"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <span className="font-medium text-gray-800 dark:text-white/90">
-                          {a.title ?? al?.alert_type ?? 'Thông báo'}
+                {recentAlerts.map(a => (
+                  <li
+                    key={a._id}
+                    className="rounded-lg border border-gray-100 p-3 transition-colors duration-200 hover:border-gray-200 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-white/[0.04]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-medium text-gray-800 dark:text-white/90">
+                        {a.title ?? a.type ?? 'Thông báo'}
+                      </span>
+                      {!a.is_read ? (
+                        <span className="shrink-0 rounded bg-brand-500/15 px-1.5 py-0.5 text-xs text-brand-600">
+                          Mới
                         </span>
-                        <div className="flex shrink-0 flex-wrap items-center gap-1">
-                          {al?.alert_type ? (
-                            <span className="rounded bg-gray-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase text-gray-600 dark:text-gray-400">
-                              {al.alert_type}
-                            </span>
-                          ) : null}
-                          {al?.severity ? (
-                            <span
-                              className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase ${severityBadgeClass(al.severity)}`}
-                            >
-                              {al.severity}
-                            </span>
-                          ) : null}
-                          {!a.is_read ? (
-                            <span className="rounded bg-brand-500/15 px-1.5 py-0.5 text-xs text-brand-600">
-                              Mới
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Gửi: {formatDt(a.sent_at)}
-                        {al?.detected_at ? (
-                          <span className="ml-2">Phát hiện: {formatDt(al.detected_at)}</span>
-                        ) : null}
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">{formatDt(a.sent_at)}</p>
+                    {a.content ? (
+                      <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-300">
+                        {a.content}
                       </p>
-                      {al?.student_user_id ? (
-                        <p className="mt-1 text-[11px] text-gray-400 break-all">
-                          SV: {String(al.student_user_id)}
-                        </p>
-                      ) : null}
-                      {a.content ? (
-                        <p className="mt-2 line-clamp-3 text-gray-600 dark:text-gray-300">
-                          {a.content}
-                        </p>
-                      ) : null}
-                    </li>
-                  )
-                })}
+                    ) : null}
+                  </li>
+                ))}
               </ul>
             )}
           </div>

@@ -19,7 +19,12 @@ import {
   AdvisorMeetingsPage,
   AdvisorNotificationsPage,
 } from './pages/Advisor'
-import { DashboardPage, AcademicPage, FeedbackPage } from './pages/Student'
+import {
+  DashboardPage,
+  AcademicPage,
+  FeedbackPage,
+  StudentNotificationsPage,
+} from './pages/Student'
 import FormElements from './pages/Forms/FormElements'
 import AppLayout from './layout/AppLayout'
 import AdvisorLayout from './layout/AdvisorLayout'
@@ -40,6 +45,7 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="academic" element={<AcademicPage />} />
                 <Route path="feedback" element={<FeedbackPage />} />
+                <Route path="notifications" element={<StudentNotificationsPage />} />
                 <Route path="profile" element={<UserProfiles />} />
               </Route>
             </Route>

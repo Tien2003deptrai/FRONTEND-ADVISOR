@@ -8,7 +8,6 @@ import TextArea from '@/components/form/input/TextArea'
 import { meetingService } from '@/services/MeetingService'
 import {
   type MeetingHint,
-  SENTIMENT_OPTS,
   SENTIMENT_SKIP,
   type FeedbackCreateForm,
 } from '@/models/Feedback'
@@ -73,7 +72,9 @@ export default function FeedbackCreateModal({
       meetingHints.map(m => ({
         value: m.meeting_id,
         label: `${m.class_label} • ${
-          m.meeting_time ? new Date(m.meeting_time).toLocaleString('vi-VN') : m.meeting_id
+          m.meeting_time
+            ? new Date(m.meeting_time).toLocaleString('vi-VN')
+            : 'Buổi họp (chưa có giờ)'
         }`,
       })),
     [meetingHints]
@@ -82,11 +83,11 @@ export default function FeedbackCreateModal({
 
   const handleSubmit = async () => {
     if (!form.meetingId.trim()) {
-      toast.error('Chọn meeting cần phản hồi')
+      toast.error('Chọn buổi họp cần phản hồi')
       return
     }
-    if (form.text.trim().length < 30) {
-      toast.error('Nội dung phản hồi tối thiểu 30 ký tự')
+    if (form.text.trim().length < 20) {
+      toast.error('Nội dung phản hồi tối thiểu 20 ký tự (theo hệ thống)')
       return
     }
     setSaving(true)
@@ -106,28 +107,27 @@ export default function FeedbackCreateModal({
     >
       <h3 className="mb-2 text-lg font-semibold">Gửi phản hồi sau buổi SHCVHT</h3>
       <p className="mb-4 text-xs text-gray-500">
-        Chọn meeting từ danh sách của bạn rồi gửi phản hồi. Nội dung tối thiểu 30 ký tự.
+        Chọn buổi họp từ danh sách rồi gửi phản hồi. Nội dung tối thiểu 20 ký tự.
       </p>
       <div className="space-y-3">
         <div>
-          <Label>Meeting *</Label>
+          <Label>Buổi họp *</Label>
           <Select
             key={`meeting-${isOpen}-${meetingHints.length}-${form.meetingId}`}
             options={meetingOptions}
             placeholder={
               loadingMeetings
-                ? 'Đang tải meetings...'
+                ? 'Đang tải danh sách...'
                 : meetingOptions.length
-                  ? 'Chọn meeting'
-                  : 'Chưa có meeting'
+                  ? 'Chọn buổi họp'
+                  : 'Chưa có buổi họp'
             }
             onChange={v => setForm(prev => ({ ...prev, meetingId: v }))}
             defaultValue={form.meetingId}
           />
           {selectedMeeting && (
-            <p className="mt-2 text-xs text-gray-500">
-              Lớp: <code>{selectedMeeting.class_label}</code> • Cố vấn:{' '}
-              <code>{selectedMeeting.advisor_label}</code>
+            <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+              Lớp: {selectedMeeting.class_label} · Cố vấn: {selectedMeeting.advisor_label}
             </p>
           )}
         </div>
@@ -138,50 +138,10 @@ export default function FeedbackCreateModal({
             value={form.text}
             onChange={v => setForm(prev => ({ ...prev, text: v }))}
             disabled={saving}
-            hint={`${form.text.trim().length}/30+ ký tự`}
+            hint={`${form.text.trim().length}/20+ ký tự`}
           />
         </div>
-        <div>
-          <Label>Đánh giá (tùy chọn)</Label>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map(star => (
-              <button
-                key={star}
-                type="button"
-                disabled={saving}
-                onClick={() => setForm(prev => ({ ...prev, rating: star }))}
-                className={`text-2xl leading-none transition-colors ${
-                  star <= form.rating ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'
-                }`}
-                aria-label={`Chọn ${star} sao`}
-                title={`${star} sao`}
-              >
-                ★
-              </button>
-            ))}
-            {form.rating > 0 && (
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => setForm(prev => ({ ...prev, rating: 0 }))}
-                className="ml-2 text-xs text-gray-500 underline"
-              >
-                Bỏ chọn
-              </button>
-            )}
-          </div>
         </div>
-        <div>
-          <Label>Cảm xúc (tùy)</Label>
-          <Select
-            key={`sent-${isOpen}`}
-            options={SENTIMENT_OPTS}
-            placeholder="Chọn"
-            onChange={v => setForm(prev => ({ ...prev, sentiment: v }))}
-            defaultValue={form.sentiment}
-          />
-        </div>
-      </div>
       <div className="mt-6 flex justify-end gap-2">
         <Button size="sm" variant="outline" disabled={saving} onClick={onClose}>
           Hủy

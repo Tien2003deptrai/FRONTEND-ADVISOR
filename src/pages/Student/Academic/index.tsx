@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import PageMeta from '@/components/common/PageMeta'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -14,7 +14,7 @@ import { masterDataService } from '@/services/MasterDataService'
 import { studentService } from '@/services/StudentService'
 
 type AcademicRow = {
-  term_id?: string | { _id?: string }
+  term_id?: string | { _id?: string; term_code?: string; term_name?: string }
   gpa_prev_sem?: number | null
   gpa_current?: number | null
   num_failed?: number | null
@@ -41,6 +41,8 @@ type MyAdvisorData = {
     class_name?: string
     department_id?: string
     major_id?: string
+    department_display?: string | null
+    major_display?: string | null
     status?: string
   } | null
 }
@@ -88,6 +90,19 @@ export default function AcademicPage() {
   const [saving, setSaving] = useState(false)
 
   const [form, setForm] = useState<AcademicFormState>(initialFormState)
+
+  const resolveTermLabel = useMemo(() => {
+    const byId = new Map(terms.map(t => [t._id, `${t.term_code} — ${t.term_name}`] as const))
+    return (row: AcademicRow) => {
+      const t = row.term_id
+      if (t && typeof t === 'object') {
+        const parts = [t.term_code, t.term_name].filter(Boolean)
+        if (parts.length) return parts.join(' — ')
+      }
+      const id = termIdOf(row)
+      return (id && byId.get(id)) || '—'
+    }
+  }, [terms])
 
   const setFormField = <K extends keyof AcademicFormState>(key: K, value: AcademicFormState[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -201,13 +216,12 @@ export default function AcademicPage() {
       <PageMeta title="Học tập | Sinh viên" description="Nộp / cập nhật dữ liệu học tập" />
       <PageBreadcrumb pageTitle="Học tập" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Bảng từ <code className="text-xs">POST /dashboard/student</code> (academic_trend).
-          Thêm/sửa qua <code className="text-xs">POST /academic/submit</code> — theo chuẩn UI: form
-          trong modal.
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          Theo dõi và cập nhật chỉ số học tập theo từng học kỳ. Dùng «Nộp / cập nhật» để ghi nhận dữ
+          liệu mới.
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => void loadTable()} disabled={loading}>
             Làm mới bảng
           </Button>
@@ -217,9 +231,9 @@ export default function AcademicPage() {
         </div>
       </div>
 
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-gray-800 dark:text-white/90">
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm transition-shadow duration-200 dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+        <div className="mb-4 flex items-center justify-between gap-2 border-b border-gray-100 pb-3 dark:border-gray-800">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white/90">
             Cố vấn học tập của tôi
           </h2>
           <Button
@@ -237,49 +251,70 @@ export default function AcademicPage() {
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-              <p className="text-xs text-gray-500">Họ tên cố vấn</p>
-              <p className="font-medium text-gray-800 dark:text-white/90">
+            <div className="rounded-lg border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Họ tên cố vấn
+              </p>
+              <p className="mt-1 font-medium text-gray-900 dark:text-white/90">
                 {advisorData.advisor.profile?.full_name || '—'}
               </p>
-              <p className="mt-2 text-xs text-gray-500">Email</p>
-              <p className="text-sm">{advisorData.advisor.email || '—'}</p>
-              <p className="mt-2 text-xs text-gray-500">Mã CB / Chức danh</p>
-              <p className="text-sm">
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Email
+              </p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                {advisorData.advisor.email || '—'}
+              </p>
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Mã CB / Chức danh
+              </p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                 {advisorData.advisor.advisor_info?.staff_code || '—'} /{' '}
                 {advisorData.advisor.advisor_info?.title || '—'}
               </p>
             </div>
-            <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-              <p className="text-xs text-gray-500">Lớp cố vấn</p>
-              <p className="font-medium text-gray-800 dark:text-white/90">
-                {advisorData.advisor_class?.class_code || '—'}{' '}
+            <div className="rounded-lg border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Lớp cố vấn
+              </p>
+              <p className="mt-1 font-medium text-gray-900 dark:text-white/90">
+                {advisorData.advisor_class?.class_code || '—'}
                 {advisorData.advisor_class?.class_name
-                  ? `— ${advisorData.advisor_class.class_name}`
+                  ? ` — ${advisorData.advisor_class.class_name}`
                   : ''}
               </p>
-              <p className="mt-2 text-xs text-gray-500">department_id / major_id</p>
-              <p className="break-all text-sm">
-                {advisorData.advisor_class?.department_id || '—'} /{' '}
-                {advisorData.advisor_class?.major_id || '—'}
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Khoa / Ngành
               </p>
-              <p className="mt-2 text-xs text-gray-500">Trạng thái lớp</p>
-              <p className="text-sm">{advisorData.advisor_class?.status || '—'}</p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                {advisorData.advisor_class?.department_display || '—'}
+              </p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                {advisorData.advisor_class?.major_display || '—'}
+              </p>
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Trạng thái lớp
+              </p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                {advisorData.advisor_class?.status || '—'}
+              </p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+        <h2 className="mb-4 border-b border-gray-100 pb-3 text-base font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
+          Lịch sử học tập
+        </h2>
         {loading ? (
-          <p className="text-gray-500">Đang tải...</p>
+          <p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
         ) : (
           <div className="overflow-x-auto">
             <Table className="text-left text-sm">
               <TableHeader>
                 <TableRow className="border-b border-gray-200 dark:border-gray-700">
                   <TableCell isHeader className="px-3 py-2 font-semibold">
-                    Học kỳ (id)
+                    Học kỳ
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
                     Ghi nhận
@@ -320,8 +355,8 @@ export default function AcademicPage() {
                         key={`${termIdOf(row)}-${row.recorded_at}-${i}`}
                         className="border-b border-gray-100 dark:border-gray-800"
                       >
-                        <TableCell className="max-w-[120px] truncate px-3 py-2 font-mono text-xs">
-                          {termIdOf(row) || '—'}
+                        <TableCell className="max-w-[220px] px-3 py-2 text-gray-800 dark:text-gray-200">
+                          {resolveTermLabel(row)}
                         </TableCell>
                         <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
                           {row.recorded_at

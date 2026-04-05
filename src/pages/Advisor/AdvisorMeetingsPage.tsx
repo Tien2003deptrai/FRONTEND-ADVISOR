@@ -47,6 +47,9 @@ type FeedbackForMeeting = {
   rating?: number
   sentiment_label?: string
   submitted_at?: string
+  class_display?: string | null
+  advisor_display?: string | null
+  meeting_time?: string | null
 }
 
 type DetailTab = 'students' | 'feedback'
@@ -103,6 +106,7 @@ export default function AdvisorMeetingsPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [classId, setClassId] = useState<string | null>(null)
+  const [classDisplayLabel, setClassDisplayLabel] = useState<string | null>(null)
   const [loadingPrep, setLoadingPrep] = useState(false)
   const [studentOptions, setStudentOptions] = useState<{ value: string; text: string }[]>([])
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
@@ -189,14 +193,23 @@ export default function AdvisorMeetingsPage() {
         masterDataService.getTermsList({ page: 1, limit: 50 }),
         masterDataService.getActiveTerm().catch(() => null),
       ])
-      const cls = clsRes.data as { _id?: string } | null
+      const cls = clsRes.data as {
+        _id?: string
+        class_code?: string
+        class_name?: string
+      } | null
       setClassId(cls?._id ? String(cls._id) : null)
+      const cParts = [cls?.class_code, cls?.class_name].filter(Boolean)
+      setClassDisplayLabel(cParts.length ? cParts.join(' — ') : null)
 
-      const tdata = termsRes.data as { items?: { _id: string; term_code?: string }[] }
+      const tdata = termsRes.data as { items?: { _id: string; term_code?: string; term_name?: string }[] }
       const opts =
         tdata.items?.map(t => ({
           value: t._id,
-          label: t.term_code ?? t._id,
+          label:
+            t.term_code && t.term_name
+              ? `${t.term_code} — ${t.term_name}`
+              : (t.term_code ?? t.term_name ?? 'Học kỳ'),
         })) ?? []
       setTermOptions(opts)
 
@@ -213,10 +226,16 @@ export default function AdvisorMeetingsPage() {
         const mdata = memRes.data as { items: MemberRow[] }
         const studs = mdata.items ?? []
         setStudentOptions(
-          studs.map(r => ({
-            value: String(r.student?._id ?? ''),
-            text: `${r.student?.profile?.full_name ?? r.student?.username ?? r.student?._id} (${r.student?.email ?? ''})`,
-          })).filter(o => o.value)
+          studs.map(r => {
+            const name =
+              r.student?.profile?.full_name ||
+              r.student?.username ||
+              (r.student?._id ? 'Sinh viên' : '')
+            return {
+              value: String(r.student?._id ?? ''),
+              text: `${name}${r.student?.email ? ` (${r.student.email})` : ''}`,
+            }
+          }).filter(o => o.value)
         )
       } else {
         setStudentOptions([])
@@ -285,16 +304,16 @@ export default function AdvisorMeetingsPage() {
       />
       <PageBreadcrumb pageTitle="Cuộc họp tư vấn" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Danh sách các buổi họp do bạn tạo. Thêm mới qua modal theo chuẩn UI dự án.
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          Quản lý lịch họp tư vấn với sinh viên trong lớp cố vấn của bạn.
         </p>
         <Button size="sm" onClick={() => void openCreate()}>
           Tạo cuộc họp
         </Button>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
         {loading ? (
           <p className="py-8 text-gray-500">Đang tải...</p>
         ) : (
@@ -379,13 +398,10 @@ export default function AdvisorMeetingsPage() {
       >
         {detailMeeting ? (
           <>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white/90">
               Chi tiết cuộc họp
             </h3>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 break-all">
-              ID: {detailMeeting._id}
-            </p>
-            <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-gray-500">Lớp</dt>
                 <dd className="font-medium text-gray-800 dark:text-white/90">
@@ -410,9 +426,9 @@ export default function AdvisorMeetingsPage() {
               <button
                 type="button"
                 onClick={() => setDetailTab('students')}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                   detailTab === 'students'
-                    ? 'bg-brand-500 text-white'
+                    ? 'bg-brand-500 text-white shadow-theme-xs'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
               >
@@ -421,9 +437,9 @@ export default function AdvisorMeetingsPage() {
               <button
                 type="button"
                 onClick={() => setDetailTab('feedback')}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                   detailTab === 'feedback'
-                    ? 'bg-brand-500 text-white'
+                    ? 'bg-brand-500 text-white shadow-theme-xs'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
               >
@@ -461,7 +477,7 @@ export default function AdvisorMeetingsPage() {
                           className="border-b border-gray-100 dark:border-gray-800"
                         >
                           <TableCell className="px-3 py-2">
-                            {s.profile?.full_name ?? s.username ?? s._id}
+                            {s.profile?.full_name ?? s.username ?? 'Sinh viên'}
                           </TableCell>
                           <TableCell className="px-3 py-2">{s.email ?? '—'}</TableCell>
                           <TableCell className="px-3 py-2">
@@ -482,6 +498,9 @@ export default function AdvisorMeetingsPage() {
                         Thời gian
                       </TableCell>
                       <TableCell isHeader className="px-3 py-2 font-semibold">
+                        Lớp / Cố vấn
+                      </TableCell>
+                      <TableCell isHeader className="px-3 py-2 font-semibold">
                         Cảm xúc
                       </TableCell>
                       <TableCell isHeader className="px-3 py-2 font-semibold">
@@ -495,7 +514,7 @@ export default function AdvisorMeetingsPage() {
                   <TableBody>
                     {feedbackRows.length === 0 ? (
                       <TableRow>
-                        <td className="px-3 py-6 text-gray-500" colSpan={4}>
+                        <td className="px-3 py-6 text-gray-500" colSpan={5}>
                           Chưa có phản hồi sau buổi họp này.
                         </td>
                       </TableRow>
@@ -507,6 +526,12 @@ export default function AdvisorMeetingsPage() {
                         >
                           <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
                             {formatDt(fb.submitted_at)}
+                          </TableCell>
+                          <TableCell className="max-w-[200px] px-3 py-2 text-xs text-gray-600 dark:text-gray-400">
+                            <div className="line-clamp-2">{fb.class_display || '—'}</div>
+                            <div className="mt-0.5 line-clamp-1 text-gray-500">
+                              {fb.advisor_display || '—'}
+                            </div>
                           </TableCell>
                           <TableCell className="px-3 py-2">{fb.sentiment_label ?? '—'}</TableCell>
                           <TableCell className="px-3 py-2">
@@ -538,9 +563,13 @@ export default function AdvisorMeetingsPage() {
           <p className="text-sm text-gray-500">Đang tải...</p>
         ) : (
           <div className="space-y-4">
-            <p className="text-xs text-gray-500">
-              Lớp:{' '}
-              <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">{classId ?? '—'}</code>
+            <p className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-white/[0.04] dark:text-gray-300">
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Lớp cố vấn
+              </span>
+              <span className="mt-1 block font-medium text-gray-900 dark:text-white/90">
+                {classDisplayLabel || 'Chưa có lớp'}
+              </span>
             </p>
             <div>
               <Label htmlFor="m-term">Học kỳ (tuỳ chọn)</Label>

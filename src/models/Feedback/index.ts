@@ -14,6 +14,10 @@ export type FeedbackRow = {
   rating?: number
   sentiment_label?: string
   submitted_at?: string
+  meeting_time?: string | null
+  meeting_end_time?: string | null
+  class_display?: string | null
+  advisor_display?: string | null
 }
 
 export type MeetingHint = {

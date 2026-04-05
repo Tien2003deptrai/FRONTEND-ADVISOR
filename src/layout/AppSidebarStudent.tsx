@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import {
+  AlertIcon,
   ChatIcon,
   ChevronDownIcon,
   GridIcon,
@@ -34,7 +35,12 @@ const mainNav: NavItem[] = [
     icon: <ChatIcon />,
     name: 'Phản hồi',
     path: '/student/feedback',
-  }
+  },
+  {
+    icon: <AlertIcon />,
+    name: 'Thông báo',
+    path: '/student/notifications',
+  },
 ]
 
 const othersNav: NavItem[] = [

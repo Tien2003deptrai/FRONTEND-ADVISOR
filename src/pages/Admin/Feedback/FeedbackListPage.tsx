@@ -28,6 +28,10 @@ type FeedbackRow = {
   sentiment_label?: string
   feedback_score?: number
   submitted_at?: string
+  meeting_time?: string | null
+  meeting_end_time?: string | null
+  class_display?: string | null
+  advisor_display?: string | null
 }
 
 function formatDate(iso?: string): string {
@@ -135,31 +139,31 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
           className={`grid grid-cols-1 gap-3 md:grid-cols-2 ${presetAdvisorUserId ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}
         >
           <div className="min-w-0">
-            <Label htmlFor="fb-class">class_id</Label>
+            <Label htmlFor="fb-class">Lớp (mã nội bộ)</Label>
             <InputField
               id="fb-class"
               value={draft.classId}
               onChange={e => setDraft(d => ({ ...d, classId: e.target.value }))}
-              placeholder="ObjectId lớp cố vấn"
+              placeholder="Dán mã lớp từ hệ thống (nếu cần lọc)"
             />
           </div>
           <div className="min-w-0">
-            <Label htmlFor="fb-stu">student_user_id</Label>
+            <Label htmlFor="fb-stu">Sinh viên (mã nội bộ)</Label>
             <InputField
               id="fb-stu"
               value={draft.studentId}
               onChange={e => setDraft(d => ({ ...d, studentId: e.target.value }))}
-              placeholder="ObjectId sinh viên"
+              placeholder="Mã tài khoản sinh viên (nếu cần lọc)"
             />
           </div>
           {!presetAdvisorUserId ? (
             <div className="min-w-0">
-              <Label htmlFor="fb-adv">advisor_user_id</Label>
+              <Label htmlFor="fb-adv">Cố vấn (mã nội bộ)</Label>
               <InputField
                 id="fb-adv"
                 value={draft.advisorId}
                 onChange={e => setDraft(d => ({ ...d, advisorId: e.target.value }))}
-                placeholder="ObjectId cố vấn"
+                placeholder="Mã tài khoản cố vấn (nếu cần lọc)"
               />
             </div>
           ) : null}
@@ -205,6 +209,9 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
                     Thời gian
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
+                    Lớp / Cố vấn
+                  </TableCell>
+                  <TableCell isHeader className="px-3 py-2 font-semibold">
                     Cảm xúc
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
@@ -221,7 +228,7 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <td className="px-3 py-6 text-gray-500" colSpan={5}>
+                    <td className="px-3 py-6 text-gray-500" colSpan={6}>
                       Không có bản ghi.
                     </td>
                   </TableRow>
@@ -233,6 +240,12 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
                     >
                       <TableCell className="max-w-[140px] whitespace-nowrap px-3 py-2 text-xs">
                         {formatDate(row.submitted_at)}
+                      </TableCell>
+                      <TableCell className="max-w-[200px] px-3 py-2 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="line-clamp-2">{row.class_display || '—'}</div>
+                        <div className="mt-0.5 line-clamp-1 text-gray-500">
+                          {row.advisor_display || '—'}
+                        </div>
                       </TableCell>
                       <TableCell className="px-3 py-2">{row.sentiment_label ?? '—'}</TableCell>
                       <TableCell className="px-3 py-2">
@@ -288,39 +301,47 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
         {detailRow && (
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="font-medium text-gray-500">ID</dt>
-              <dd className="break-all">{detailRow._id}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">class_id</dt>
-              <dd className="break-all">{String(detailRow.class_id ?? '—')}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">student_user_id</dt>
-              <dd className="break-all">{String(detailRow.student_user_id ?? '—')}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">advisor_user_id</dt>
-              <dd className="break-all">{String(detailRow.advisor_user_id ?? '—')}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">meeting_id</dt>
-              <dd className="break-all">{String(detailRow.meeting_id ?? '—')}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">Thời gian gửi</dt>
-              <dd>{formatDate(detailRow.submitted_at)}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">Cảm xúc / điểm</dt>
-              <dd>
-                {detailRow.sentiment_label ?? '—'}
-                {detailRow.feedback_score != null ? ` (score: ${detailRow.feedback_score})` : ''}
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                Buổi họp
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-white/90">
+                {detailRow.meeting_time ? formatDate(detailRow.meeting_time) : '—'}
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-500">Nội dung</dt>
-              <dd className="whitespace-pre-wrap text-gray-800 dark:text-white/90">
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                Lớp cố vấn
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-white/90">
+                {detailRow.class_display || '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Cố vấn</dt>
+              <dd className="mt-1 text-gray-800 dark:text-white/90">
+                {detailRow.advisor_display || '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                Thời gian gửi
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-white/90">
+                {formatDate(detailRow.submitted_at)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                Cảm xúc / điểm
+              </dt>
+              <dd className="mt-1 text-gray-800 dark:text-white/90">
+                {detailRow.sentiment_label ?? '—'}
+                {detailRow.feedback_score != null ? ` (${detailRow.feedback_score.toFixed(2)})` : ''}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Nội dung</dt>
+              <dd className="mt-1 whitespace-pre-wrap text-gray-800 dark:text-white/90">
                 {detailRow.feedback_text}
               </dd>
             </div>
