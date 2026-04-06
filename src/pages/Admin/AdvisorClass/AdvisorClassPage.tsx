@@ -464,7 +464,7 @@ export default function AdvisorClassPage() {
   }))
 
   const canManageClass = isAdmin
-  const canManageMembers = isAdmin || isAdvisor
+  const canManageMembers = isAdmin
   /** ADMIN: đủ chọn cố vấn và cố vấn đã có khoa trong org (backend bắt buộc). */
   const adminCanUpsertClass = isAdmin && !!selectedAdvisorId && !!advisorOrgDeptId
 

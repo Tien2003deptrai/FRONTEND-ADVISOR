@@ -100,7 +100,7 @@ export default function AdvisorDashboardCharts({
         toolbar: { show: false },
         background: 'transparent',
       },
-      labels: ['Cảnh báo RISK (OPEN)', 'Cảnh báo sentiment (OPEN)'],
+      labels: ['Cảnh báo RISK (OPEN)', 'Cảnh báo SENTIMENT (OPEN)'],
       colors: DONUT_COLORS,
       legend: {
         position: 'bottom',
@@ -245,7 +245,7 @@ export default function AdvisorDashboardCharts({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi title="Sinh viên lớp cố vấn" value={paginationTotal} accent="default" />
         <Kpi title="Cảnh báo RISK đang mở" value={riskOpen} accent="danger" />
-        <Kpi title="Cảnh báo sentiment đang mở" value={sentimentOpen} accent="warn" />
+        <Kpi title="Cảnh báo SENTIMENT đang mở" value={sentimentOpen} accent="warn" />
         <Kpi title="Thông báo chưa đọc (20 mới nhất)" value={unreadNotifications} accent="default" />
       </div>
 

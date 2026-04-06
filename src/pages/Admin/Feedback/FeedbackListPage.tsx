@@ -61,7 +61,10 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
   const [rows, setRows] = useState<FeedbackRow[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
 
-  const [applied, setApplied] = useState(emptyFilters)
+  const [applied, setApplied] = useState(() => ({
+    ...emptyFilters(),
+    advisorId: presetAdvisorUserId ?? '',
+  }))
 
   const [detailOpen, setDetailOpen] = useState(false)
   const [detailRow, setDetailRow] = useState<FeedbackRow | null>(null)
@@ -72,7 +75,8 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
       const body: Record<string, unknown> = { page, limit }
       if (applied.classId.trim()) body.class_id = applied.classId.trim()
       if (applied.studentId.trim()) body.student_user_id = applied.studentId.trim()
-      if (applied.advisorId.trim()) body.advisor_user_id = applied.advisorId.trim()
+      const scopedAdvisorId = presetAdvisorUserId?.trim() || applied.advisorId.trim()
+      if (scopedAdvisorId) body.advisor_user_id = scopedAdvisorId
       if (applied.sentiment && applied.sentiment !== SENTIMENT_ALL)
         body.sentiment_label = applied.sentiment
 
@@ -87,7 +91,7 @@ export default function FeedbackListPage({ presetAdvisorUserId }: FeedbackListPa
     } finally {
       setLoading(false)
     }
-  }, [page, limit, applied])
+  }, [page, limit, applied, presetAdvisorUserId])
 
   useEffect(() => {
     void loadList()

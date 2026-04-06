@@ -37,7 +37,6 @@ function formatDt(iso?: string): string {
 export default function AdvisorNotificationsPage() {
   const [page, setPage] = useState(1)
   const limit = 20
-  const [listKey, setListKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<NotifRow[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
@@ -61,7 +60,7 @@ export default function AdvisorNotificationsPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, limit, listKey])
+  }, [page, limit])
 
   useEffect(() => {
     void loadList()
@@ -84,7 +83,7 @@ export default function AdvisorNotificationsPage() {
       )
       setGenOpen(false)
       setPage(1)
-      setListKey(k => k + 1)
+      void loadList()
     } catch {
       toast.error('Không chạy được generate')
     } finally {
@@ -112,9 +111,6 @@ export default function AdvisorNotificationsPage() {
                     Thời gian
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
-                    Loại
-                  </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
                     Tiêu đề
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
@@ -135,7 +131,6 @@ export default function AdvisorNotificationsPage() {
                       <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
                         {formatDt(row.sent_at)}
                       </TableCell>
-                      <TableCell className="px-3 py-2">{row.type ?? '—'}</TableCell>
                       <TableCell className="max-w-md px-3 py-2">
                         <div className="font-medium text-gray-800 dark:text-white/90">
                           {row.title ?? '—'}
