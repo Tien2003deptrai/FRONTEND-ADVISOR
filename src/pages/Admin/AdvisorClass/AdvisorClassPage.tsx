@@ -443,8 +443,46 @@ export default function AdvisorClassPage() {
     }
   }
 
-  const openClassDetail = () => {
+  const openClassDetail = async () => {
     if (!advisorClass) return
+    
+    // Load advisors list if not already loaded (needed to resolve advisor name)
+    if (isAdmin && advisors.length === 0) {
+      try {
+        const res = await userService.getUsers({ role: 'ADVISOR', limit: 100, page: 1 })
+        const data = res.data as { items?: UserItem[] }
+        setAdvisors(data.items ?? [])
+      } catch {
+        // Will fallback to showing ID
+      }
+    }
+    
+    // Load departments list if not already loaded
+    if (deptPicklist.length === 0) {
+      try {
+        const resDept = await masterDataService.getDepartmentsList({ page: 1, limit: 100 })
+        const d = resDept.data as { items: DepartmentItem[] }
+        setDeptPicklist(d.items ?? [])
+      } catch {
+        // Will fallback to showing ID
+      }
+    }
+    
+    // Load majors list if department exists and majors not loaded
+    if (advisorClass.department_id && majorPicklist.length === 0) {
+      try {
+        const rm = await masterDataService.getMajorsList({
+          department_id: advisorClass.department_id,
+          limit: 100,
+          page: 1,
+        })
+        const md = rm.data as { items: MajorItem[] }
+        setMajorPicklist(md.items ?? [])
+      } catch {
+        // Will fallback to showing ID
+      }
+    }
+    
     setClassDetailOpen(true)
   }
 
@@ -705,9 +743,33 @@ export default function AdvisorClassPage() {
                 ['ID', advisorClass._id],
                 ['Mã lớp', advisorClass.class_code],
                 ['Tên', advisorClass.class_name ?? '—'],
-                ['Cố vấn (user)', String(advisorClass.advisor_user_id)],
-                ['department_id', String(advisorClass.department_id ?? '—')],
-                ['major_id', advisorClass.major_id ? String(advisorClass.major_id) : '—'],
+                ['Cố vấn', (() => {
+                  // Try to find advisor from loaded advisors list first
+                  const adv = advisors.find(a => a._id === String(advisorClass.advisor_user_id))
+                  if (adv) return `${adv.profile?.full_name ?? adv.username} (${adv.email})`
+                  
+                  // If viewing own class as ADVISOR, use selectedAdvisor or authUser
+                  if (selectedAdvisor && selectedAdvisor._id === String(advisorClass.advisor_user_id)) {
+                    return `${selectedAdvisor.profile?.full_name ?? selectedAdvisor.username} (${selectedAdvisor.email})`
+                  }
+                  
+                  // If current user is the advisor
+                  if (isAdvisor && authUser?._id === String(advisorClass.advisor_user_id)) {
+                    return `${authUser.profile?.full_name ?? authUser.username} (${authUser.email})`
+                  }
+                  
+                  // Fallback to showing ID
+                  return String(advisorClass.advisor_user_id)
+                })()],
+                ['Khoa', (() => {
+                  const dept = deptPicklist.find(d => d._id === String(advisorClass.department_id))
+                  return dept ? `${dept.department_code} — ${dept.department_name}` : (advisorClass.department_id ? String(advisorClass.department_id) : '—')
+                })()],
+                ['Ngành', (() => {
+                  if (!advisorClass.major_id) return '—'
+                  const major = majorPicklist.find(m => m._id === String(advisorClass.major_id))
+                  return major ? `${major.major_code} — ${major.major_name}` : String(advisorClass.major_id)
+                })()],
                 [
                   'Khóa/cohort',
                   advisorClass.cohort_year != null ? String(advisorClass.cohort_year) : '—',

@@ -39,10 +39,16 @@ type ListUser = {
   email: string
   role: string
   status: string
+  full_name?: string | null
+  department_name?: string | null
+  major_name?: string | null
   profile?: { full_name?: string }
   org?: {
-    department_id?: string | { _id?: string }
-    major_id?: string | { _id?: string }
+    department_id?:
+      | string
+      | { _id?: string; department_code?: string; department_name?: string }
+      | null
+    major_id?: string | { _id?: string; major_code?: string; major_name?: string } | null
   }
   student_info?: { student_code?: string }
   advisor_info?: { staff_code?: string; title?: string }
@@ -80,6 +86,18 @@ function normalizeRefId(raw: unknown): string {
   return String(raw)
 }
 
+function extractOrgName(
+  ref: unknown,
+  keyCode: 'department_code' | 'major_code',
+  keyName: 'department_name' | 'major_name'
+): string {
+  if (!ref || typeof ref !== 'object') return ''
+  const item = ref as Record<string, unknown>
+  const code = typeof item[keyCode] === 'string' ? item[keyCode] : ''
+  const name = typeof item[keyName] === 'string' ? item[keyName] : ''
+  return [code, name].filter(Boolean).join(' - ')
+}
+
 export default function AdminUsersPage() {
   const user = useAuthStore(s => s.user)
   const isAdmin = user?.role === 'ADMIN'
@@ -94,6 +112,7 @@ export default function AdminUsersPage() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [detailRows, setDetailRows] = useState<[string, string][]>([])
   const [detailTitle, setDetailTitle] = useState('')
+  const [detailLoading, setDetailLoading] = useState(false)
 
   const [createOpen, setCreateOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -215,27 +234,68 @@ export default function AdminUsersPage() {
     }
   }
 
-  const openDetail = (row: ListUser) => {
+  const openDetail = async (row: ListUser) => {
     setDetailTitle(row.role === 'ADVISOR' ? 'Chi tiết cố vấn' : 'Chi tiết sinh viên')
-    const lines: [string, string][] = [
-      ['ID', row._id],
-      ['Username', row.username],
-      ['Email', row.email],
-      ['Họ tên', row.profile?.full_name ?? '—'],
-      ['Vai trò', row.role],
-      ['Trạng thái', row.status],
-      ['department_id', normalizeRefId(row.org?.department_id) || '—'],
-      ['major_id', normalizeRefId(row.org?.major_id) || '—'],
-    ]
-    if (row.role === 'STUDENT') {
-      lines.push(['Mã SV', row.student_info?.student_code ?? '—'])
-    }
-    if (row.role === 'ADVISOR') {
-      lines.push(['Mã CB', row.advisor_info?.staff_code ?? '—'])
-      lines.push(['Chức danh', row.advisor_info?.title ?? '—'])
-    }
-    setDetailRows(lines)
+    setDetailRows([])
     setDetailOpen(true)
+    setDetailLoading(true)
+    try {
+      const res = await userService.getInfoUser({ user_id: row._id })
+      const detail = (res.data as ListUser | undefined) ?? row
+
+      const fullName = detail.full_name || detail.profile?.full_name || '—'
+      const deptNameFromOrg = extractOrgName(
+        detail.org?.department_id,
+        'department_code',
+        'department_name'
+      )
+      const majorNameFromOrg = extractOrgName(detail.org?.major_id, 'major_code', 'major_name')
+      const departmentDisplay =
+        detail.department_name || deptNameFromOrg || normalizeRefId(detail.org?.department_id) || '—'
+      const majorDisplay =
+        detail.major_name || majorNameFromOrg || normalizeRefId(detail.org?.major_id) || '—'
+
+      const lines: [string, string][] = [
+        ['ID', detail._id],
+        ['Username', detail.username],
+        ['Email', detail.email],
+        ['Họ tên', fullName],
+        ['Vai trò', detail.role],
+        ['Trạng thái', detail.status],
+        ['Khoa', departmentDisplay],
+        ['Ngành', majorDisplay],
+      ]
+      if (detail.role === 'STUDENT') {
+        lines.push(['Mã SV', detail.student_info?.student_code ?? '—'])
+      }
+      if (detail.role === 'ADVISOR') {
+        lines.push(['Mã CB', detail.advisor_info?.staff_code ?? '—'])
+        lines.push(['Chức danh', detail.advisor_info?.title ?? '—'])
+      }
+      setDetailRows(lines)
+    } catch {
+      setDetailRows([
+        ['ID', row._id],
+        ['Họ tên', row.full_name || row.profile?.full_name || row.username || '—'],
+        [
+          'Khoa',
+          row.department_name ||
+            extractOrgName(row.org?.department_id, 'department_code', 'department_name') ||
+            normalizeRefId(row.org?.department_id) ||
+            '—',
+        ],
+        [
+          'Ngành',
+          row.major_name ||
+            extractOrgName(row.org?.major_id, 'major_code', 'major_name') ||
+            normalizeRefId(row.org?.major_id) ||
+            '—',
+        ],
+      ])
+      toast.error('Đã có lỗi xảy ra')
+    } finally {
+      setDetailLoading(false)
+    }
   }
 
   const deptOptions = deptPicklist.map(d => ({
@@ -345,7 +405,7 @@ export default function AdminUsersPage() {
                         className="border-b border-gray-100 dark:border-gray-800"
                       >
                         <TableCell className="px-3 py-2">
-                          {row.profile?.full_name ?? row.username}
+                          {row.full_name || row.profile?.full_name || row.username}
                         </TableCell>
                         <TableCell className="px-3 py-2">{row.email}</TableCell>
                         {tab === 'student' && (
@@ -355,7 +415,7 @@ export default function AdminUsersPage() {
                         )}
                         <TableCell className="px-3 py-2">{row.status}</TableCell>
                         <TableCell className="px-3 py-2">
-                          <Button size="sm" variant="outline" onClick={() => openDetail(row)}>
+                          <Button size="sm" variant="outline" onClick={() => void openDetail(row)}>
                             Xem
                           </Button>
                         </TableCell>
@@ -397,14 +457,18 @@ export default function AdminUsersPage() {
 
       <Modal isOpen={detailOpen} onClose={() => setDetailOpen(false)} className="max-w-lg p-6">
         <h3 className="mb-4 text-lg font-semibold">{detailTitle}</h3>
-        <dl className="space-y-2 text-sm">
-          {detailRows.map(([k, v]) => (
-            <div key={k} className="flex gap-2 border-b border-gray-100 pb-2 dark:border-gray-800">
-              <dt className="w-28 shrink-0 font-medium text-gray-500">{k}</dt>
-              <dd className="break-all text-gray-800 dark:text-white/90">{v}</dd>
-            </div>
-          ))}
-        </dl>
+        {detailLoading ? (
+          <p className="py-6 text-sm text-gray-500">Đang tải...</p>
+        ) : (
+          <dl className="space-y-2 text-sm">
+            {detailRows.map(([k, v]) => (
+              <div key={k} className="flex gap-2 border-b border-gray-100 pb-2 dark:border-gray-800">
+                <dt className="w-28 shrink-0 font-medium text-gray-500">{k}</dt>
+                <dd className="break-all text-gray-800 dark:text-white/90">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         <div className="mt-6 flex justify-end">
           <Button size="sm" variant="outline" onClick={() => setDetailOpen(false)}>
             Đóng

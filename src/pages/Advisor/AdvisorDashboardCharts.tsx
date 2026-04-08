@@ -30,7 +30,7 @@ type Props = {
   noAdvisorClass: boolean
 }
 
-const DONUT_COLORS = ['#dc2626', '#7c3aed']
+const DONUT_COLORS = ['#3b82f6', '#8b5cf6']
 
 function countBySeverity(alerts: AlertOpenRow[]): Record<string, number> {
   const m: Record<string, number> = {}
@@ -41,16 +41,37 @@ function countBySeverity(alerts: AlertOpenRow[]): Record<string, number> {
   return m
 }
 
+function colorForSeverity(severity: string): string {
+  const key = severity.toUpperCase()
+  if (key === 'HIGH' || key === 'CRITICAL') return '#dc2626'
+  if (key === 'MEDIUM' || key === 'MODERATE') return '#eab308'
+  if (key === 'LOW') return '#22c55e'
+  return '#6366f1'
+}
+
 function countRiskLabels(rows: StudentRowLite[]): Map<string, number> {
   const m = new Map<string, number>()
   for (const r of rows) {
-    const key =
-      r.risk_label === null || r.risk_label === undefined
-        ? 'Chưa có'
-        : String(r.risk_label)
+    let key: string
+    if (r.risk_label === null || r.risk_label === undefined) {
+      key = 'Chưa có'
+    } else {
+      const val = String(r.risk_label)
+      if (val === '-1') key = 'High'
+      else if (val === '0') key = 'Medium'
+      else if (val === '1') key = 'Low'
+      else key = val
+    }
     m.set(key, (m.get(key) ?? 0) + 1)
   }
   return m
+}
+
+function colorForLabel(label: string): string {
+  if (label === 'High') return '#dc2626'
+  if (label === 'Medium') return '#eab308'
+  if (label === 'Low') return '#22c55e'
+  return '#9ca3af'
 }
 
 export default function AdvisorDashboardCharts({
@@ -75,6 +96,10 @@ export default function AdvisorDashboardCharts({
     () => Object.keys(severityCounts).sort(),
     [severityCounts]
   )
+  const severityColors = useMemo(
+    () => severityCategories.map(colorForSeverity),
+    [severityCategories]
+  )
   const severitySeries = useMemo(
     () => severityCategories.map(c => severityCounts[c] ?? 0),
     [severityCategories, severityCounts]
@@ -83,10 +108,14 @@ export default function AdvisorDashboardCharts({
   const labelMap = useMemo(() => countRiskLabels(studentTable), [studentTable])
   const labelCategories = useMemo(() => {
     const keys = Array.from(labelMap.keys())
-    const order = ['Chưa có', '-1', '0', '1']
+    const order = ['Chưa có', 'High', 'Medium', 'Low']
     const rest = keys.filter(k => !order.includes(k)).sort()
     return [...order.filter(k => keys.includes(k)), ...rest]
   }, [labelMap])
+  const labelColors = useMemo(
+    () => labelCategories.map(colorForLabel),
+    [labelCategories]
+  )
   const labelSeries = useMemo(
     () => [{ name: 'Sinh viên', data: labelCategories.map(c => labelMap.get(c) ?? 0) }],
     [labelCategories, labelMap]
@@ -100,14 +129,21 @@ export default function AdvisorDashboardCharts({
         toolbar: { show: false },
         background: 'transparent',
       },
-      labels: ['Cảnh báo RISK (OPEN)', 'Cảnh báo SENTIMENT (OPEN)'],
+      labels: ['Cảnh báo RISK', 'Cảnh báo SENTIMENT'],
       colors: DONUT_COLORS,
       legend: {
         position: 'bottom',
         fontSize: '12px',
         labels: { colors: '#64748b' },
       },
-      dataLabels: { enabled: true },
+      dataLabels: { 
+        enabled: true,
+        style: { 
+          fontSize: '14px',
+          fontWeight: 700,
+          colors: ['#ffffff', '#ffffff'],
+        },
+      },
       plotOptions: {
         pie: {
           donut: {
@@ -116,7 +152,7 @@ export default function AdvisorDashboardCharts({
               show: true,
               total: {
                 show: true,
-                label: 'Tổng OPEN',
+                label: 'Tổng cảnh báo',
                 formatter: () => String(totalOpenAlerts),
               },
             },
@@ -138,13 +174,14 @@ export default function AdvisorDashboardCharts({
         toolbar: { show: false },
         background: 'transparent',
       },
-      colors: ['#465fff'],
+      colors: severityColors.length ? severityColors : ['#6366f1'],
       plotOptions: {
         bar: {
           horizontal: false,
           columnWidth: '55%',
           borderRadius: 6,
           borderRadiusApplication: 'end',
+          distributed: true,
         },
       },
       dataLabels: { enabled: false },
@@ -193,13 +230,14 @@ export default function AdvisorDashboardCharts({
         toolbar: { show: false },
         background: 'transparent',
       },
-      colors: ['#0d9488'],
+      colors: labelColors.length ? labelColors : ['#6366f1'],
       plotOptions: {
         bar: {
           horizontal: false,
           columnWidth: '55%',
           borderRadius: 6,
           borderRadiusApplication: 'end',
+          distributed: true,
         },
       },
       dataLabels: { enabled: false },

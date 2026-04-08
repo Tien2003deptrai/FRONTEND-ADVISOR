@@ -47,7 +47,19 @@ type AlertItem = {
 
 function formatRiskLabel(v: number | string | null | undefined): string {
   if (v === null || v === undefined) return '—'
+  // Convert numeric values to text labels
+  if (v === -1 || v === '-1') return 'High'
+  if (v === 0 || v === '0') return 'Medium'
+  if (v === 1 || v === '1') return 'Low'
   return String(v)
+}
+
+function riskLabelBadgeClass(label: number | string | null | undefined): string {
+  const normalized = formatRiskLabel(label)
+  if (normalized === 'High') return 'bg-red-500/15 text-red-700 dark:text-red-400'
+  if (normalized === 'Medium') return 'bg-amber-500/15 text-amber-800 dark:text-amber-400'
+  if (normalized === 'Low') return 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400'
+  return 'bg-gray-500/15 text-gray-600 dark:text-gray-400'
 }
 
 function severityBadgeClass(sev?: string): string {
@@ -222,16 +234,12 @@ export default function AdvisorDashboardPage() {
                               {row.risk_score != null ? row.risk_score.toFixed(3) : '—'}
                             </TableCell>
                             <TableCell className="px-3 py-2">
-                              {formatRiskLabel(row.risk_label)}
+                              <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${riskLabelBadgeClass(row.risk_label)}`}>
+                                {formatRiskLabel(row.risk_label)}
+                              </span>
                             </TableCell>
                             <TableCell className="px-3 py-2">
                               <span className="font-medium">{row.alert_count ?? 0}</span>
-                              {row.alerts ? (
-                                <span className="ml-1 text-xs text-gray-500">
-                                  (âm: {row.alerts.negative_sentiment_30d ?? 0}, HR:{' '}
-                                  {row.alerts.high_risk ?? 0})
-                                </span>
-                              ) : null}
                             </TableCell>
                             <TableCell className="px-3 py-2">
                               <Button

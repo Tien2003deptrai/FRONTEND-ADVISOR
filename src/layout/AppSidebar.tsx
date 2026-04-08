@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 
 // Assume these icons are imported from an icon library
@@ -24,7 +24,7 @@ const navItems: NavItem[] = [
     name: 'Dashboard',
     subItems: [
       { name: 'Ecommerce', path: '/', pro: false },
-      { name: 'Đơn vị (Faculty)', path: '/faculty-dashboard', pro: false },
+      // { name: 'Đơn vị (Faculty)', path: '/faculty-dashboard', pro: false },
       { name: 'Phản hồi', path: '/feedback-list', pro: false },
     ],
   },

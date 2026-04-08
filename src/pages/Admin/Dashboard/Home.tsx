@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router'
+// import { Link } from 'react-router'
 import Chart from 'react-apexcharts'
 import type { ApexOptions } from 'apexcharts'
 import { toast } from 'sonner'
@@ -131,7 +131,13 @@ export default function Home() {
   const gridColor = isDark ? '#334155' : '#e2e8f0'
 
   const pieLabels = useMemo(
-    () => (data?.risk_distribution ?? []).map(r => String(r._id ?? 'Không xác định')),
+    () => (data?.risk_distribution ?? []).map(r => {
+      const label = String(r._id ?? 'Không xác định')
+      if (label === '1') return 'HIGH'
+      if (label === '0') return 'MEDIUM'
+      if (label === '-') return 'LOW'
+      return label
+    }),
     [data?.risk_distribution]
   )
   const pieSeries = useMemo(
@@ -187,7 +193,7 @@ export default function Home() {
   const anomalyCategories = useMemo(
     () =>
       (data?.anomaly_summary ?? []).map(
-        r => `${r._id?.status ?? '—'} · ${r._id?.severity ?? '—'}`
+        r => `${r._id?.severity ?? '—'}`
       ),
     [data?.anomaly_summary]
   )
@@ -268,10 +274,10 @@ export default function Home() {
               Bảng điều khiển
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
-              Dữ liệu rủi ro và cảnh báo tổng hợp (dự báo mới nhất theo sinh viên). API:{' '}
-              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
-                POST /dashboard/faculty
-              </code>
+              Dữ liệu rủi ro và cảnh báo tổng hợp (dự báo mới nhất theo sinh viên) 
+              {/* <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">
+                API:{' '} POST /dashboard/faculty
+              </code> */}
               .
             </p>
           </div>
@@ -376,8 +382,8 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs dark:border-gray-800 dark:bg-white/3 md:p-6">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white/90">
-                Phân bố nhãn rủi ro
-              </h2>
+                 Phân bố nhãn rủi ro (Risk)
+             </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 Số sinh viên theo nhãn dự báo mới nhất.
               </p>
@@ -394,11 +400,11 @@ export default function Home() {
 
             <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs dark:border-gray-800 dark:bg-white/3 md:p-6">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white/90">
-                Cảnh báo theo trạng thái &amp; mức độ
-              </h2>
+                 Cảnh báo theo trạng thái &amp; mức độ cảm xúc
+             </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Tổng hợp bản ghi cảnh báo (anomaly) trong phạm vi đã chọn.
-              </p>
+                 Tổng hợp bản ghi cảnh báo (Alert) trong phạm vi đã chọn.
+             </p>
               <div className="mt-4 min-h-[300px]">
                 {anomalyCategories.length > 0 ? (
                   <Chart
@@ -416,7 +422,7 @@ export default function Home() {
             </div>
           </div>
 
-          <p className="text-center text-xs text-gray-500 dark:text-gray-500">
+          {/* <p className="text-center text-xs text-gray-500 dark:text-gray-500">
             Cần bảng chi tiết? Mở mục{' '}
             <Link
               to="/faculty-dashboard"
@@ -425,7 +431,7 @@ export default function Home() {
               Dashboard đơn vị
             </Link>
             .
-          </p>
+          </p> */}
         </div>
       ) : (
         <p className="text-sm text-gray-500 dark:text-gray-400">Không có dữ liệu.</p>

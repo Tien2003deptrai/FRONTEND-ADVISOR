@@ -42,6 +42,15 @@ function termLabel(row: AcademicRow): string {
   return '—'
 }
 
+function formatRiskLabel(v: number | string | null | undefined): string {
+  if (v === null || v === undefined) return '—'
+  // Convert numeric values to text labels
+  if (v === -1 || v === '-1') return 'High'
+  if (v === 0 || v === '0') return 'Medium'
+  if (v === 1 || v === '1') return 'Low'
+  return String(v)
+}
+
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<StudentDashboardData | null>(null)
@@ -88,39 +97,95 @@ export default function DashboardPage() {
         chart: { toolbar: { show: false }, fontFamily: 'inherit' },
         xaxis: { categories, labels: { rotate: -35 } },
         stroke: { curve: 'smooth', width: 2 },
-        dataLabels: { enabled: false },
+        dataLabels: { 
+          enabled: true,
+          style: {
+            fontSize: '12px',
+            fontWeight: '600',
+          },
+          offsetY: -10,
+        },
+        markers: {
+          size: 5,
+          strokeWidth: 2,
+          hover: { size: 7 },
+        },
         legend: { position: 'top' as const },
         yaxis: { min: 0, max: 4, tickAmount: 4 },
+        tooltip: {
+          y: {
+            formatter: (val: number) => val != null ? val.toFixed(2) : '',
+          },
+        },
       },
       series,
     }
   }, [data?.academic_trend])
 
   const sentimentChart = useMemo(() => {
-    const raw = data?.sentiment_trend ?? []
-    const months = Array.from(
-      new Set(raw.map(r => r._id?.month).filter(Boolean))
-    ).sort() as string[]
-    const labels = ['POSITIVE', 'NEUTRAL', 'NEGATIVE']
-    const series = labels.map(lab => ({
-      name: lab,
-      data: months.map(m => {
-        const row = raw.find(r => r._id?.month === m && r._id?.sentiment_label === lab)
-        return row ? row.count : 0
-      }),
-    }))
+    const rows = [...(data?.academic_trend ?? [])].sort(
+      (a, b) => new Date(a.recorded_at ?? 0).getTime() - new Date(b.recorded_at ?? 0).getTime()
+    )
+    const categories = rows.map((r, i) =>
+      r.recorded_at ? new Date(r.recorded_at).toLocaleDateString('vi-VN') : `#${i + 1}`
+    )
+    
+    // Map sentiment scores to labels and keep actual scores
+    const sentimentData = rows.map(r => {
+      const score = r.sentiment_score
+      if (score == null) return { positive: null, neutral: null, negative: null, score: null }
+      if (score > 0.33) return { positive: score, neutral: null, negative: null, score }
+      if (score < -0.33) return { positive: null, neutral: null, negative: score, score }
+      return { positive: null, neutral: score, negative: null, score }
+    })
+    
+    const series = [
+      {
+        name: 'POSITIVE',
+        data: sentimentData.map(d => d.positive),
+      },
+      {
+        name: 'NEUTRAL',
+        data: sentimentData.map(d => d.neutral),
+      },
+      {
+        name: 'NEGATIVE',
+        data: sentimentData.map(d => d.negative),
+      },
+    ]
+    
     return {
-      months,
+      months: categories,
       options: {
         chart: { stacked: true, toolbar: { show: false }, fontFamily: 'inherit' },
-        xaxis: { categories: months },
+        xaxis: { 
+          categories,
+          labels: { rotate: -35 },
+        },
         plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
-        dataLabels: { enabled: false },
+        dataLabels: { 
+          enabled: true,
+          formatter: (val: number) => val != null ? val.toFixed(2) : '',
+          style: {
+            fontSize: '11px',
+            fontWeight: '600',
+          },
+        },
+        yaxis: {
+          min: -1,
+          max: 1,
+          tickAmount: 5,
+          forceNiceScale: false,
+          labels: {
+            formatter: (val: number) => val.toFixed(1),
+          },
+        },
+        colors: ['#22c55e', '#eab308', '#dc2626'],
         legend: { position: 'top' as const },
       },
       series,
     }
-  }, [data?.sentiment_trend])
+  }, [data?.academic_trend])
 
   return (
     <>
@@ -166,7 +231,7 @@ export default function DashboardPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Mức rủi ro</p>
               <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                {data?.risk_label ?? '—'}
+                {formatRiskLabel(data?.risk_label)}
               </p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/3 dark:shadow-none">
