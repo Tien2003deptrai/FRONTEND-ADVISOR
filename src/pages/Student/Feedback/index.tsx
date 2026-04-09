@@ -129,8 +129,8 @@ export default function FeedbackPage() {
         <h2 className="mb-1 border-b border-gray-100 pb-3 text-base font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
           Lớp cố vấn & buổi họp
         </h2>
-        <p className="mb-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
-          Chọn buổi họp theo thời gian, sau đó bấm «Gửi feedback».
+        <p className="mb-4 mt-3 text-xs text-red-500 dark:text-gray-400">
+          Chọn buổi họp theo thời gian, sau đó bấm "Gửi feedback - sau buổi họp và trong 24h".
         </p>
         <MeetingTable
           meetingHints={meetingHints}

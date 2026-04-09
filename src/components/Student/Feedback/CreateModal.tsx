@@ -106,8 +106,8 @@ export default function FeedbackCreateModal({
       className="max-h-[90vh] max-w-lg overflow-y-auto p-6"
     >
       <h3 className="mb-2 text-lg font-semibold">Gửi phản hồi sau buổi SHCVHT</h3>
-      <p className="mb-4 text-xs text-gray-500">
-        Chọn buổi họp từ danh sách rồi gửi phản hồi. Nội dung tối thiểu 20 ký tự.
+      <p className="mb-4 text-xs text-red-500">
+        Chọn buổi họp từ danh sách rồi gửi phản hồi. Mỗi sinh viên 1 lần feedback
       </p>
       <div className="space-y-3">
         <div>
@@ -132,7 +132,7 @@ export default function FeedbackCreateModal({
           )}
         </div>
         <div>
-          <Label htmlFor="fb-text">Nội dung *</Label>
+          <Label htmlFor="fb-text">Nội dung*</Label>
           <TextArea
             rows={5}
             value={form.text}

@@ -108,6 +108,32 @@ export default function AcademicPage() {
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
+  const gpaPrevByTerm = useMemo(() => {
+    const sorted = [...rows].sort(
+      (a, b) => new Date(b.recorded_at ?? 0).getTime() - new Date(a.recorded_at ?? 0).getTime()
+    )
+    const byTerm = new Map<string, number>()
+    for (const row of sorted) {
+      const termId = termIdOf(row)
+      if (!termId || byTerm.has(termId)) continue
+      if (row.gpa_prev_sem == null) continue
+      byTerm.set(termId, Number(row.gpa_prev_sem))
+    }
+    return byTerm
+  }, [rows])
+
+  const lockedGpaPrevValue = form.termId ? gpaPrevByTerm.get(form.termId) : undefined
+  const isGpaPrevLocked = lockedGpaPrevValue != null
+
+  const onTermChange = (termId: string) => {
+    const existingGpaPrev = gpaPrevByTerm.get(termId)
+    setForm(prev => ({
+      ...prev,
+      termId,
+      gpaPrev: existingGpaPrev != null ? String(existingGpaPrev) : '',
+    }))
+  }
+
   const loadTable = useCallback(async () => {
     setLoading(true)
     try {
@@ -157,9 +183,12 @@ export default function AcademicPage() {
   }, [loadTable, loadTerms, loadMyAdvisor])
 
   const openModal = () => {
+    const initialTermId = defaultTermId || terms[0]?._id || ''
+    const existingGpaPrev = initialTermId ? gpaPrevByTerm.get(initialTermId) : undefined
     setForm({
       ...initialFormState,
-      termId: defaultTermId || terms[0]?._id || '',
+      termId: initialTermId,
+      gpaPrev: existingGpaPrev != null ? String(existingGpaPrev) : '',
     })
     setModalOpen(true)
   }
@@ -393,6 +422,9 @@ export default function AcademicPage() {
           API <code>POST /academic/submit</code> — upsert theo học kỳ. Các trường số là tùy chọn
           ngoài học kỳ.
         </p>
+        <p className="mb-4 text-xs text-amber-700">
+          Lưu ý: Bạn chỉ được cập nhật dữ liệu cách nhau ít nhất 7 ngày.
+        </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Label>Học kỳ *</Label>
@@ -400,7 +432,7 @@ export default function AcademicPage() {
               key={`term-${modalOpen}-${terms.length}-${defaultTermId}`}
               options={termOptions}
               placeholder="Chọn học kỳ"
-              onChange={value => setFormField('termId', value)}
+              onChange={onTermChange}
               defaultValue={form.termId}
             />
           </div>
@@ -414,8 +446,13 @@ export default function AcademicPage() {
               step={0.01}
               value={form.gpaPrev}
               onChange={e => setFormField('gpaPrev', e.target.value)}
-              disabled={saving}
+              disabled={saving || isGpaPrevLocked}
             />
+            {isGpaPrevLocked ? (
+              <p className="mt-1 text-xs text-gray-500">
+                Học kỳ này đã có GPA kỳ trước. Giá trị được giữ nguyên theo dữ liệu cũ.
+              </p>
+            ) : null}
           </div>
           <div>
             <Label htmlFor="gpa-cur">GPA hiện tại (0–4)</Label>
@@ -469,7 +506,7 @@ export default function AcademicPage() {
             />
           </div>
           <div>
-            <Label htmlFor="hrs">Giờ tự học (≥0)</Label>
+            <Label htmlFor="hrs">Giờ tự học trong tuần (≥0)</Label>
             <InputField
               id="hrs"
               type="number"

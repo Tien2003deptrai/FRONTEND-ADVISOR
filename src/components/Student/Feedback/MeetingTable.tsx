@@ -23,13 +23,7 @@ export default function MeetingHintsTable({ meetingHints, onFeedback }: Props) {
               Cố vấn học tập
             </TableCell>
             <TableCell isHeader className="px-3 py-2 font-semibold">
-              Thời gian họp
-            </TableCell>
-            <TableCell isHeader className="px-3 py-2 font-semibold">
-              Lần feedback
-            </TableCell>
-            <TableCell isHeader className="px-3 py-2 font-semibold">
-              Gần nhất
+              Thời gian kết thúc
             </TableCell>
             <TableCell isHeader className="px-3 py-2 font-semibold">
               Hành động
@@ -61,13 +55,7 @@ export default function MeetingHintsTable({ meetingHints, onFeedback }: Props) {
                   {row.advisor_label}
                 </TableCell>
                 <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
-                  {row.meeting_time ? new Date(row.meeting_time).toLocaleString('vi-VN') : '—'}
-                </TableCell>
-                <TableCell className="px-3 py-2">{row.feedback_count}</TableCell>
-                <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
-                  {row.latest_submitted_at
-                    ? new Date(row.latest_submitted_at).toLocaleString('vi-VN')
-                    : '—'}
+                  {row.meeting_end_time ? new Date(row.meeting_end_time).toLocaleString('vi-VN') : '—'}
                 </TableCell>
                 <TableCell className="px-3 py-2">
                   <Button
