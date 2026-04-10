@@ -228,8 +228,33 @@ export default function AcademicPage() {
       toast.success(res.message || 'Đã lưu dữ liệu học tập')
       setModalOpen(false)
       void loadTable()
-    } catch {
-      toast.error('Đã có lỗi xảy ra')
+    } catch (error: any) {
+      // Check if error has remaining time info
+      if (error?.response?.data?.remainingTime) {
+        const remainingMs = error.response.data.remainingTime
+        const remainingSeconds = Math.max(0, Math.floor(remainingMs / 1000))
+        
+        if (remainingSeconds > 0) {
+          const days = Math.floor(remainingSeconds / 86400)
+          const hours = Math.floor((remainingSeconds % 86400) / 3600)
+          const minutes = Math.floor((remainingSeconds % 3600) / 60)
+          
+          let timeMessage = ''
+          if (days > 0) {
+            timeMessage = `Còn ${days} ngày ${hours} giờ nữa mới được nộp.`
+          } else if (hours > 0) {
+            timeMessage = `Còn ${hours} giờ ${minutes} phút nữa mới được nộp.`
+          } else {
+            timeMessage = `Còn ${minutes} phút nữa mới được nộp.`
+          }
+          
+          toast.error(timeMessage)
+        } else {
+          toast.error('Không thể nộp bài. Vui lòng thử lại.')
+        }
+      } else {
+        toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra')
+      }
     } finally {
       setSaving(false)
     }
@@ -349,19 +374,19 @@ export default function AcademicPage() {
                     Ghi nhận
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
-                    GPA HT
+                    GPA hiện tại
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
                     GPA trước
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
-                    Trượt
+                    Môn trượt
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
-                    Tham dự
+                    Tỉ lệ tham dự
                   </TableCell>
                   <TableCell isHeader className="px-3 py-2 font-semibold">
-                    Động lực / Stress
+                    Stress(1-5)
                   </TableCell>
                 </TableRow>
               </TableHeader>
@@ -401,7 +426,7 @@ export default function AcademicPage() {
                             : '—'}
                         </TableCell>
                         <TableCell className="px-3 py-2 text-xs">
-                          {row.motivation_score ?? '—'} / {row.stress_level ?? '—'}
+                          {row.stress_level ?? '—'}
                         </TableCell>
                       </TableRow>
                     ))

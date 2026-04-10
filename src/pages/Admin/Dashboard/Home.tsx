@@ -23,7 +23,7 @@ type DepartmentItem = {
 
 type RiskDistRow = { _id: string | null; count: number }
 type AnomalyRow = {
-  _id: { status?: string; severity?: string }
+  _id: { alert_type?: string; severity?: string }
   count: number
 }
 
@@ -40,12 +40,10 @@ type FacultyDashboardData = {
 }
 
 const RISK_LABEL_COLORS: Record<string, string> = {
-  LOW: '#22c55e',
-  MEDIUM: '#eab308',
-  MODERATE: '#f59e0b',
-  HIGH: '#f97316',
-  CRITICAL: '#dc2626',
-  UNKNOWN: '#94a3b8',
+  LOW: '#10b981',        // Xanh lá - An toàn
+  MEDIUM: '#f59e0b',     // Vàng - Cảnh báo
+  HIGH: '#ef4444',       // Đỏ - Nghiêm trọng
+  UNKNOWN: '#6b7280',    // Xám - Không xác định
 }
 
 function colorForRiskSlice(label: string): string {
@@ -132,11 +130,15 @@ export default function Home() {
 
   const pieLabels = useMemo(
     () => (data?.risk_distribution ?? []).map(r => {
-      const label = String(r._id ?? 'Không xác định')
-      if (label === '1') return 'HIGH'
-      if (label === '0') return 'MEDIUM'
-      if (label === '-') return 'LOW'
-      return label
+      const rawValue = r._id
+      // Convert to string for comparison (handle both numeric and string)
+      const strValue = String(rawValue ?? '')
+      
+      if (strValue === '-1') return 'HIGH'
+      if (strValue === '0') return 'MEDIUM'
+      if (strValue === '1') return 'LOW'
+      if (!rawValue) return 'UNKNOWN'
+      return strValue
     }),
     [data?.risk_distribution]
   )
@@ -193,12 +195,52 @@ export default function Home() {
   const anomalyCategories = useMemo(
     () =>
       (data?.anomaly_summary ?? []).map(
-        r => `${r._id?.severity ?? '—'}`
+        r => {
+          const alertType = r._id?.alert_type ?? 'UNKNOWN'
+          const severity = r._id?.severity ?? '—'
+          
+          // Map alert type to Vietnamese
+          const typeLabel = 
+            alertType === 'RISK' ? 'Rủi ro' :
+            alertType === 'SENTIMENT' ? 'Cảm xúc' :
+            alertType === 'ANOMALY' ? 'Bất thường' :
+            alertType
+          
+          // Map severity to Vietnamese
+          const sevLabel =
+            severity === 'HIGH' ? 'Cao' :
+            severity === 'MEDIUM' ? 'Trung bình' :
+            severity === 'LOW' ? 'Thấp' :
+            severity
+          
+          return `${typeLabel} - ${sevLabel}`
+        }
       ),
     [data?.anomaly_summary]
   )
   const anomalyCounts = useMemo(
     () => (data?.anomaly_summary ?? []).map(r => r.count),
+    [data?.anomaly_summary]
+  )
+
+  // Colors based on alert type
+  const anomalyColors = useMemo(
+    () => (data?.anomaly_summary ?? []).map(r => {
+      const alertType = r._id?.alert_type ?? 'UNKNOWN'
+      const severity = r._id?.severity ?? 'LOW'
+      
+      // Base color by alert type
+      const baseColor = 
+        alertType === 'RISK' ? '#ef4444' : // Red
+        alertType === 'SENTIMENT' ? '#8b5cf6' : // Purple
+        alertType === 'ANOMALY' ? '#f97316' : // Orange
+        '#6b7280' // Gray
+      
+      // Adjust opacity by severity
+      if (severity === 'HIGH') return baseColor
+      if (severity === 'MEDIUM') return baseColor + 'cc' // 80% opacity
+      return baseColor + '99' // 60% opacity
+    }),
     [data?.anomaly_summary]
   )
 
@@ -213,36 +255,59 @@ export default function Home() {
       theme: { mode: isDark ? 'dark' : 'light' },
       plotOptions: {
         bar: {
-          horizontal: true,
+          horizontal: false, // Đổi thành cột dọc
           borderRadius: 6,
-          barHeight: '70%',
+          columnWidth: '60%',
           distributed: true,
         },
       },
-      colors: ['#465fff', '#7c3aed', '#db2777', '#ea580c', '#0d9488', '#2563eb'],
+      colors: anomalyColors.length ? anomalyColors : ['#94a3b8'],
       dataLabels: {
         enabled: true,
-        style: { colors: [isDark ? '#f1f5f9' : '#0f172a'] },
+        formatter: (val: number) => {
+          if (val == null || Number.isNaN(val)) return '0'
+          return String(Math.round(val))
+        },
+        style: { 
+          fontSize: '12px',
+          fontWeight: 600,
+          colors: [isDark ? '#f1f5f9' : '#0f172a'],
+        },
+        offsetY: -10,
       },
       xaxis: {
         categories: anomalyCategories,
-        labels: { style: { colors: foreColor } },
+        labels: { 
+          style: { colors: foreColor, fontSize: '11px' },
+          rotate: -45,
+          rotateAlways: false,
+          trim: true,
+        },
         axisBorder: { color: gridColor },
       },
       yaxis: {
         labels: {
           style: { colors: foreColor, fontSize: '12px' },
-          maxWidth: 280,
+          formatter: (val: number) => {
+            if (val == null || Number.isNaN(val)) return '0'
+            return String(Math.round(val))
+          },
         },
+        tickAmount: 5,
       },
       grid: { borderColor: gridColor, strokeDashArray: 4 },
       legend: { show: false },
       tooltip: {
         theme: isDark ? 'dark' : 'light',
-        y: { formatter: (val: number) => `${val} cảnh báo` },
+        y: { 
+          formatter: (val: number) => {
+            if (val == null || Number.isNaN(val)) return '0 cảnh báo'
+            return `${Math.round(val)} cảnh báo`
+          },
+        },
       },
     }),
-    [anomalyCategories, foreColor, gridColor, isDark, reduceMotion]
+    [anomalyCategories, anomalyColors, foreColor, gridColor, isDark, reduceMotion]
   )
 
   const kpi = data?.kpi
@@ -400,10 +465,10 @@ export default function Home() {
 
             <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs dark:border-gray-800 dark:bg-white/3 md:p-6">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white/90">
-                 Cảnh báo theo trạng thái &amp; mức độ cảm xúc
+                 Phân bổ cảnh báo theo loại &amp; mức độ
              </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                 Tổng hợp bản ghi cảnh báo (Alert) trong phạm vi đã chọn.
+                 Tổng hợp tất cả cảnh báo (Alert) theo loại (Rủi ro / Cảm xúc / Bất thường) và mức độ nghiêm trọng.
              </p>
               <div className="mt-4 min-h-[300px]">
                 {anomalyCategories.length > 0 ? (

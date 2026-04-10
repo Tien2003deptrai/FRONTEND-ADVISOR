@@ -14,6 +14,7 @@ export type AlertOpenRow = {
 export type AlertCards = {
   risk_open?: number
   sentiment_open?: number
+  anomaly_open?: number
 }
 
 type StudentRowLite = {
@@ -25,12 +26,13 @@ type Props = {
   alertCards: AlertCards | null
   riskAlerts: AlertOpenRow[]
   sentimentAlerts: AlertOpenRow[]
+  anomalyAlerts: AlertOpenRow[]
   paginationTotal: number
   unreadNotifications: number
   noAdvisorClass: boolean
 }
 
-const DONUT_COLORS = ['#3b82f6', '#8b5cf6']
+const DONUT_COLORS = ['#3b82f6', '#8b5cf6', '#f97316']
 
 function countBySeverity(alerts: AlertOpenRow[]): Record<string, number> {
   const m: Record<string, number> = {}
@@ -79,17 +81,19 @@ export default function AdvisorDashboardCharts({
   alertCards,
   riskAlerts,
   sentimentAlerts,
+  anomalyAlerts,
   paginationTotal,
   unreadNotifications,
   noAdvisorClass,
 }: Props) {
   const riskOpen = alertCards?.risk_open ?? 0
   const sentimentOpen = alertCards?.sentiment_open ?? 0
-  const totalOpenAlerts = riskOpen + sentimentOpen
+  const anomalyOpen = alertCards?.anomaly_open ?? 0
+  const totalOpenAlerts = riskOpen + sentimentOpen + anomalyOpen
 
   const severityMerged = useMemo(
-    () => [...riskAlerts, ...sentimentAlerts],
-    [riskAlerts, sentimentAlerts]
+    () => [...riskAlerts, ...sentimentAlerts, ...anomalyAlerts],
+    [riskAlerts, sentimentAlerts, anomalyAlerts]
   )
   const severityCounts = useMemo(() => countBySeverity(severityMerged), [severityMerged])
   const severityCategories = useMemo(
@@ -129,7 +133,7 @@ export default function AdvisorDashboardCharts({
         toolbar: { show: false },
         background: 'transparent',
       },
-      labels: ['Cảnh báo RISK', 'Cảnh báo SENTIMENT'],
+      labels: ['Cảnh báo RISK', 'Cảnh báo SENTIMENT', 'Cảnh báo ANOMALY'],
       colors: DONUT_COLORS,
       legend: {
         position: 'bottom',
@@ -141,7 +145,7 @@ export default function AdvisorDashboardCharts({
         style: { 
           fontSize: '14px',
           fontWeight: 700,
-          colors: ['#ffffff', '#ffffff'],
+          colors: ['#ffffff', '#ffffff', '#ffffff'],
         },
       },
       plotOptions: {
@@ -164,7 +168,7 @@ export default function AdvisorDashboardCharts({
     [totalOpenAlerts]
   )
 
-  const donutSeries = useMemo(() => [riskOpen, sentimentOpen], [riskOpen, sentimentOpen])
+  const donutSeries = useMemo(() => [riskOpen, sentimentOpen, anomalyOpen], [riskOpen, sentimentOpen, anomalyOpen])
 
   const barSeverityOptions = useMemo<ApexOptions>(
     () => ({
@@ -190,13 +194,6 @@ export default function AdvisorDashboardCharts({
         labels: { style: { fontSize: '11px', colors: '#64748b' } },
         axisBorder: { show: false },
         axisTicks: { show: false },
-      },
-      yaxis: {
-        labels: {
-          formatter: (val: number) => `${Math.round(val)}`,
-          style: { colors: '#64748b' },
-        },
-        title: { text: 'Số cảnh báo' },
       },
       grid: {
         borderColor: '#e2e8f0',
@@ -247,13 +244,6 @@ export default function AdvisorDashboardCharts({
         axisBorder: { show: false },
         axisTicks: { show: false },
       },
-      yaxis: {
-        labels: {
-          formatter: (val: number) => `${Math.round(val)}`,
-          style: { colors: '#64748b' },
-        },
-        title: { text: 'Số SV (trang này)' },
-      },
       grid: {
         borderColor: '#e2e8f0',
         strokeDashArray: 4,
@@ -280,10 +270,11 @@ export default function AdvisorDashboardCharts({
   return (
     <div className="mb-6 space-y-6">
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Kpi title="Sinh viên lớp cố vấn" value={paginationTotal} accent="default" />
         <Kpi title="Cảnh báo RISK đang mở" value={riskOpen} accent="danger" />
         <Kpi title="Cảnh báo SENTIMENT đang mở" value={sentimentOpen} accent="warn" />
+        <Kpi title="Cảnh báo ANOMALY đang mở" value={anomalyOpen} accent="warn" />
         <Kpi title="Thông báo chưa đọc (20 mới nhất)" value={unreadNotifications} accent="default" />
       </div>
 
@@ -293,13 +284,13 @@ export default function AdvisorDashboardCharts({
             Cảnh báo đang mở theo loại
           </h3>
           <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-            Từ trường <code className="text-xs">alert_cards</code> trên API — RISK vs SENTIMENT.
+            Từ trường <code className="text-xs">alert_cards</code> trên API — RISK vs SENTIMENT vs ANOMALY.
           </p>
           {hasDonutData ? (
             <Chart options={donutOptions} series={donutSeries} type="donut" height={300} />
           ) : (
             <p className="py-16 text-center text-sm text-gray-500 dark:text-gray-400">
-              Không có cảnh báo OPEN loại RISK/SENTIMENT cho sinh viên lớp bạn.
+              Không có cảnh báo OPEN loại RISK/SENTIMENT/ANOMALY cho sinh viên lớp bạn.
             </p>
           )}
         </div>
@@ -309,7 +300,7 @@ export default function AdvisorDashboardCharts({
             Mức độ nghiêm trọng (cảnh báo mở)
           </h3>
           <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-            Gộp <code className="text-xs">risk_alerts</code> và <code className="text-xs">sentiment_alerts</code>{' '}
+            Gộp <code className="text-xs">risk_alerts</code>, <code className="text-xs">sentiment_alerts</code> và <code className="text-xs">anomaly_alerts</code>{' '}
             (tối đa 20 mỗi loại từ API).
           </p>
           {hasSeverityData ? (
@@ -320,22 +311,6 @@ export default function AdvisorDashboardCharts({
             </p>
           )}
         </div>
-      </div>
-
-      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-        <h3 className="mb-1 text-base font-semibold text-gray-800 dark:text-white/90">
-          Phân bố nhãn dự báo rủi ro (trang hiện tại)
-        </h3>
-        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-          Theo <code className="text-xs">student_table</code> của trang phân trang — đổi trang để xem mẫu khác.
-        </p>
-        {hasLabelData ? (
-          <Chart options={barLabelOptions} series={labelSeries} type="bar" height={280} />
-        ) : (
-          <p className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-            Không có sinh viên trên trang này.
-          </p>
-        )}
       </div>
     </div>
   )

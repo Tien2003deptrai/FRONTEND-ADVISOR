@@ -90,6 +90,11 @@ export default function FeedbackPage() {
   }
 
   const openCreateForMeeting = (meetingId: string) => {
+    const meeting = meetingHints.find(m => m.meeting_id === meetingId)
+    if (meeting && meeting.feedback_count > 0) {
+      toast.info('Bạn đã gửi phản hồi cho buổi họp này rồi')
+      return
+    }
     setSelectedMeetingId(meetingId)
     setCreateOpen(true)
   }
@@ -108,8 +113,18 @@ export default function FeedbackPage() {
       await fetchPage(1)
       await loadMeetingHints()
       return true
-    } catch {
-      toast.error('Đã có lỗi xảy ra')
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string }; status?: number } }
+      const status = err.response?.status
+      const message = err.response?.data?.message
+      
+      if (status === 409 || message?.includes('already submitted')) {
+        toast.error('Bạn đã gửi phản hồi cho buổi họp này rồi')
+      } else if (status === 422) {
+        toast.error(message || 'Không thể gửi phản hồi: kiểm tra thời gian hoặc điều kiện gửi')
+      } else {
+        toast.error('Đã có lỗi xảy ra')
+      }
       return false
     }
   }

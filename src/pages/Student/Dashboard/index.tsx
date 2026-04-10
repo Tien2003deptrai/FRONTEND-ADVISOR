@@ -130,13 +130,13 @@ export default function DashboardPage() {
       r.recorded_at ? new Date(r.recorded_at).toLocaleDateString('vi-VN') : `#${i + 1}`
     )
     
-    // Map sentiment scores to labels and keep actual scores
+    // Map sentiment scores to POSITIVE/NEUTRAL/NEGATIVE lines
     const sentimentData = rows.map(r => {
       const score = r.sentiment_score
-      if (score == null) return { positive: null, neutral: null, negative: null, score: null }
-      if (score > 0.33) return { positive: score, neutral: null, negative: null, score }
-      if (score < -0.33) return { positive: null, neutral: null, negative: score, score }
-      return { positive: null, neutral: score, negative: null, score }
+      if (score == null) return { positive: null, neutral: null, negative: null }
+      if (score > 0.33) return { positive: score, neutral: null, negative: null }
+      if (score < -0.33) return { positive: null, neutral: null, negative: score }
+      return { positive: null, neutral: score, negative: null }
     })
     
     const series = [
@@ -157,12 +157,18 @@ export default function DashboardPage() {
     return {
       months: categories,
       options: {
-        chart: { stacked: true, toolbar: { show: false }, fontFamily: 'inherit' },
+        chart: { 
+          toolbar: { show: false }, 
+          fontFamily: 'inherit',
+        },
         xaxis: { 
           categories,
           labels: { rotate: -35 },
         },
-        plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
+        stroke: { 
+          curve: 'smooth', 
+          width: 3,
+        },
         dataLabels: { 
           enabled: true,
           formatter: (val: number) => val != null ? val.toFixed(2) : '',
@@ -170,6 +176,12 @@ export default function DashboardPage() {
             fontSize: '11px',
             fontWeight: '600',
           },
+          offsetY: -10,
+        },
+        markers: {
+          size: 5,
+          strokeWidth: 2,
+          hover: { size: 7 },
         },
         yaxis: {
           min: -1,
@@ -182,6 +194,11 @@ export default function DashboardPage() {
         },
         colors: ['#22c55e', '#eab308', '#dc2626'],
         legend: { position: 'top' as const },
+        tooltip: {
+          y: {
+            formatter: (val: number) => val != null ? val.toFixed(2) : '',
+          },
+        },
       },
       series,
     }
@@ -266,15 +283,15 @@ export default function DashboardPage() {
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
               <h2 className="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">
-                Cảm xúc phản hồi theo tháng
+                Xu hướng cảm xúc phản hồi
               </h2>
-              {sentimentChart.months.length === 0 ? (
+              {sentimentChart.series[0].data.length === 0 ? (
                 <p className="text-sm text-gray-500">Chưa có dữ liệu cảm xúc.</p>
               ) : (
                 <Chart
                   options={sentimentChart.options as ApexOptions}
                   series={sentimentChart.series}
-                  type="bar"
+                  type="line"
                   height={280}
                 />
               )}

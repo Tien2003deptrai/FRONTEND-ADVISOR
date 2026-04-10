@@ -92,6 +92,7 @@ export default function AdvisorDashboardPage() {
   const [alertCards, setAlertCards] = useState<AlertCards | null>(null)
   const [riskAlerts, setRiskAlerts] = useState<AlertOpenRow[]>([])
   const [sentimentAlerts, setSentimentAlerts] = useState<AlertOpenRow[]>([])
+  const [anomalyAlerts, setAnomalyAlerts] = useState<AlertOpenRow[]>([])
   const [noAdvisorClass, setNoAdvisorClass] = useState(false)
 
   const [detailOpen, setDetailOpen] = useState(false)
@@ -114,6 +115,7 @@ export default function AdvisorDashboardPage() {
         alert_cards?: AlertCards
         risk_alerts?: AlertOpenRow[]
         sentiment_alerts?: AlertOpenRow[]
+        anomaly_alerts?: AlertOpenRow[]
       }
       setRows(data.student_table ?? [])
       setRecentAlerts(data.recent_alerts ?? [])
@@ -121,6 +123,7 @@ export default function AdvisorDashboardPage() {
       setAlertCards(data.alert_cards ?? null)
       setRiskAlerts(data.risk_alerts ?? [])
       setSentimentAlerts(data.sentiment_alerts ?? [])
+      setAnomalyAlerts(data.anomaly_alerts ?? [])
       const p = data.pagination
       const emptyClass =
         (p?.total ?? 0) === 0 &&
@@ -135,6 +138,7 @@ export default function AdvisorDashboardPage() {
       setAlertCards(null)
       setRiskAlerts([])
       setSentimentAlerts([])
+      setAnomalyAlerts([])
       setNoAdvisorClass(false)
     } finally {
       setLoading(false)
@@ -171,6 +175,7 @@ export default function AdvisorDashboardPage() {
         alertCards={alertCards}
         riskAlerts={riskAlerts}
         sentimentAlerts={sentimentAlerts}
+        anomalyAlerts={anomalyAlerts}
         paginationTotal={paginationTotal}
         unreadNotifications={unreadRecent}
         noAdvisorClass={noAdvisorClass}
