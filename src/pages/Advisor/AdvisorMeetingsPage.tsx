@@ -13,6 +13,18 @@ import { advisorClassService } from '@/services/AdvisorClassService'
 import { classMemberService } from '@/services/ClassMemberService'
 import { masterDataService } from '@/services/MasterDataService'
 import { feedbackService } from '@/services/FeedbackService'
+import {
+  AngleLeftIcon,
+  AngleRightIcon,
+  CalenderIcon,
+  ChatIcon,
+  CheckLineIcon,
+  CloseLineIcon,
+  EyeIcon,
+  GroupIcon,
+  PlusIcon,
+  TimeIcon,
+} from '@/icons'
 
 type Pagination = {
   page: number
@@ -304,33 +316,81 @@ export default function AdvisorMeetingsPage() {
       />
       <PageBreadcrumb pageTitle="Cuộc họp tư vấn" />
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-          Quản lý lịch họp tư vấn với sinh viên trong lớp cố vấn của bạn.
-        </p>
-        <Button size="sm" onClick={() => void openCreate()}>
-          Tạo cuộc họp
-        </Button>
-      </div>
+      <section
+        className="relative mb-8 overflow-hidden rounded-2xl border border-brand-200/45 bg-gradient-to-br from-brand-50 via-white to-violet-50/40 p-5 shadow-[0_12px_40px_-14px_rgba(70,95,255,0.28)] ring-1 ring-brand-500/10 dark:border-brand-500/20 dark:from-brand-950/45 dark:via-gray-900 dark:to-violet-950/30 dark:ring-brand-400/10 sm:p-6 md:flex md:items-center md:justify-between md:gap-8"
+        aria-labelledby="meetings-hero-title"
+      >
+        <div className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full bg-brand-400/20 blur-3xl dark:bg-brand-500/15" aria-hidden />
+        <div className="relative z-10 max-w-2xl">
+          <p className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand-700 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/5 dark:text-brand-300 dark:ring-brand-500/25">
+            <CalenderIcon className="size-3.5 shrink-0" aria-hidden />
+            Lịch SHCVHT
+          </p>
+          <h2 id="meetings-hero-title" className="mt-3 text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+            Tạo buổi họp, mời sinh viên, theo dõi phản hồi sau họp
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+            Một luồng rõ ràng: danh sách bên dưới để tra cứu nhanh — nút chính bên phải để lên lịch mới.
+          </p>
+        </div>
+        <div className="relative z-10 mt-5 shrink-0 md:mt-0">
+          <Button
+            type="button"
+            size="md"
+            variant="primary"
+            className="shadow-lg"
+            startIcon={<PlusIcon className="size-[18px] shrink-0" aria-hidden />}
+            endIcon={<CalenderIcon className="size-[18px] shrink-0 opacity-95" aria-hidden />}
+            onClick={() => void openCreate()}
+          >
+            Tạo cuộc họp
+          </Button>
+        </div>
+      </section>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
+      <div className="rounded-2xl border border-gray-200/90 bg-white p-5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)] ring-1 ring-gray-900/[0.035] dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] dark:ring-white/[0.05] sm:p-6">
+        <div className="mb-5 flex flex-col gap-2 border-b border-gray-100 pb-4 dark:border-gray-800 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+              Danh sách
+            </p>
+            <h3 className="mt-1 flex items-center gap-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+              <TimeIcon className="size-6 text-brand-500 dark:text-brand-400" aria-hidden />
+              Cuộc họp đã lên lịch
+            </h3>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="font-semibold"
+            startIcon={<PlusIcon className="size-4 shrink-0" aria-hidden />}
+            onClick={() => void openCreate()}
+          >
+            Thêm buổi họp
+          </Button>
+        </div>
         {loading ? (
-          <p className="py-8 text-gray-500">Đang tải...</p>
+          <div className="space-y-3 py-4" aria-busy="true">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="h-11 animate-pulse rounded-lg bg-gray-100 dark:bg-white/10" />
+            ))}
+          </div>
         ) : (
           <>
             <Table className="text-left text-sm">
               <TableHeader>
-                <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                <TableRow className="border-b border-gray-200 bg-gray-50/90 dark:border-gray-800 dark:bg-white/[0.04]">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Lớp
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Bắt đầu
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Kết thúc
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Thao tác
                   </TableCell>
                 </TableRow>
@@ -338,23 +398,45 @@ export default function AdvisorMeetingsPage() {
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <td className="px-3 py-8 text-gray-500" colSpan={4}>
-                      Chưa có cuộc họp nào.
-                    </td>
+                    <TableCell colSpan={4} className="px-4 py-14 text-center">
+                      <div className="mx-auto flex max-w-sm flex-col items-center gap-2">
+                        <div className="flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                          <CalenderIcon className="size-6" aria-hidden />
+                        </div>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                          Chưa có cuộc họp nào
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Bấm <span className="font-semibold text-brand-600">Tạo cuộc họp</span> phía trên để bắt đầu.
+                        </p>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ) : (
                   rows.map(row => (
-                    <TableRow key={row._id} className="border-b border-gray-100 dark:border-gray-800">
-                      <TableCell className="px-3 py-2">{classLabel(row)}</TableCell>
-                      <TableCell className="px-3 py-2 whitespace-nowrap text-xs">
+                    <TableRow
+                      key={row._id}
+                      className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50/90 dark:border-gray-800 dark:hover:bg-white/[0.03]"
+                    >
+                      <TableCell className="px-4 py-3.5">
+                        <span className="font-medium text-gray-900 dark:text-white">{classLabel(row)}</span>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-4 py-3.5 text-xs text-gray-700 dark:text-gray-300">
                         {formatDt(row.meeting_time)}
                       </TableCell>
-                      <TableCell className="px-3 py-2 whitespace-nowrap text-xs">
+                      <TableCell className="whitespace-nowrap px-4 py-3.5 text-xs text-gray-700 dark:text-gray-300">
                         {formatDt(row.meeting_end_time)}
                       </TableCell>
-                      <TableCell className="px-3 py-2">
-                        <Button size="sm" variant="outline" onClick={() => openDetail(row)}>
-                          Xem chi tiết
+                      <TableCell className="px-4 py-3.5 text-right">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="font-semibold"
+                          startIcon={<EyeIcon className="size-6 shrink-0 text-gray-700 dark:text-gray-200" aria-hidden />}
+                          onClick={() => openDetail(row)}
+                        >
+                          Chi tiết
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -363,26 +445,37 @@ export default function AdvisorMeetingsPage() {
               </TableBody>
             </Table>
             {pagination && pagination.total_pages > 1 && (
-              <div className="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>
-                  Trang {pagination.page}/{pagination.total_pages} — {pagination.total} buổi
+              <div className="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+                <span className="tabular-nums">
+                  <span className="font-semibold text-gray-900 dark:text-white">{pagination.page}</span>
+                  <span className="mx-1 text-gray-400">/</span>
+                  {pagination.total_pages} trang —{' '}
+                  <span className="font-semibold text-gray-900 dark:text-white">{pagination.total}</span> buổi
                 </span>
                 <div className="flex gap-2">
                   <Button
-                    size="sm"
+                    type="button"
+                    size="xs"
                     variant="outline"
+                    className="!px-2.5 font-semibold"
                     disabled={page <= 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
+                    aria-label="Trang trước"
+                    startIcon={<AngleLeftIcon className="size-4" aria-hidden />}
                   >
-                    Trước
+                    <span className="sr-only">Trang trước</span>
                   </Button>
                   <Button
-                    size="sm"
+                    type="button"
+                    size="xs"
                     variant="outline"
+                    className="!px-2.5 font-semibold"
                     disabled={page >= pagination.total_pages}
                     onClick={() => setPage(p => p + 1)}
+                    aria-label="Trang sau"
+                    endIcon={<AngleRightIcon className="size-4" aria-hidden />}
                   >
-                    Sau
+                    <span className="sr-only">Trang sau</span>
                   </Button>
                 </div>
               </div>
@@ -394,71 +487,93 @@ export default function AdvisorMeetingsPage() {
       <Modal
         isOpen={detailOpen}
         onClose={closeDetail}
-        className="max-w-3xl p-6"
+        className="max-w-3xl overflow-hidden p-0"
       >
         {detailMeeting ? (
           <>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white/90">
-              Chi tiết cuộc họp
-            </h3>
-            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <div className="border-b border-gray-100 bg-gradient-to-r from-brand-50/95 to-violet-50/50 px-6 py-4 dark:border-gray-800 dark:from-brand-950/50 dark:to-gray-900">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/90 text-brand-600 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/10 dark:text-brand-300 dark:ring-brand-500/25">
+                    <EyeIcon className="size-5" aria-hidden />
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white/90">
+                      Chi tiết cuộc họp
+                    </h3>
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      {classLabel(detailMeeting)} · {formatDt(detailMeeting.meeting_time)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 pt-4">
+            <dl className="grid gap-4 rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-sm sm:grid-cols-2 dark:border-gray-800 dark:bg-white/[0.03]">
               <div>
-                <dt className="text-gray-500">Lớp</dt>
-                <dd className="font-medium text-gray-800 dark:text-white/90">
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Lớp</dt>
+                <dd className="mt-1 font-semibold text-gray-900 dark:text-white/90">
                   {classLabel(detailMeeting)}
                 </dd>
               </div>
               <div>
-                <dt className="text-gray-500">Thời gian</dt>
-                <dd className="text-gray-800 dark:text-white/90">
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Khung giờ</dt>
+                <dd className="mt-1 text-gray-800 dark:text-white/90">
                   {formatDt(detailMeeting.meeting_time)} → {formatDt(detailMeeting.meeting_end_time)}
                 </dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-gray-500">Tóm tắt</dt>
-                <dd className="text-gray-800 dark:text-white/90 whitespace-pre-wrap">
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tóm tắt</dt>
+                <dd className="mt-1 whitespace-pre-wrap text-gray-800 dark:text-white/90">
                   {detailMeeting.notes_summary ?? '—'}
                 </dd>
               </div>
             </dl>
 
-            <div className="mt-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2 dark:border-gray-700">
+            <nav
+              className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-gray-200/80 bg-gray-50/80 p-1.5 dark:border-gray-700 dark:bg-gray-900/50"
+              aria-label="Chi tiết cuộc họp"
+            >
               <button
                 type="button"
                 onClick={() => setDetailTab('students')}
-                className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                aria-current={detailTab === 'students' ? 'true' : undefined}
+                className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200 sm:flex-none ${
                   detailTab === 'students'
-                    ? 'bg-brand-500 text-white shadow-theme-xs'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                    ? 'bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-md ring-1 ring-brand-400/30'
+                    : 'text-gray-600 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
                 }`}
               >
-                Danh sách sinh viên
+                <GroupIcon className="size-4 shrink-0" aria-hidden />
+                Sinh viên tham dự
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('feedback')}
-                className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                aria-current={detailTab === 'feedback' ? 'true' : undefined}
+                className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200 sm:flex-none ${
                   detailTab === 'feedback'
-                    ? 'bg-brand-500 text-white shadow-theme-xs'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                    ? 'bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-md ring-1 ring-brand-400/30'
+                    : 'text-gray-600 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
                 }`}
               >
-                Phản hồi mới nhất sau họp
+                <ChatIcon className="size-4 shrink-0" aria-hidden />
+                Phản hồi sau họp
               </button>
-            </div>
+            </nav>
 
-            <div className="mt-4 h-[700px] max-h-[50vh] overflow-auto">
+            <div className="mt-4 max-h-[50vh] overflow-auto rounded-xl border border-gray-100 dark:border-gray-800">
               {detailTab === 'students' ? (
-                <Table className="text-left text-sm">
+                <Table className="text-left text-sm" framed={false}>
                   <TableHeader>
-                    <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                    <TableRow className="border-b border-gray-200 bg-gray-50/90 dark:border-gray-800 dark:bg-white/[0.04]">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Họ tên
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Email
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Mã SV
                       </TableCell>
                     </TableRow>
@@ -466,21 +581,21 @@ export default function AdvisorMeetingsPage() {
                   <TableBody>
                     {detailStudentList.length === 0 ? (
                       <TableRow>
-                        <td className="px-3 py-6 text-gray-500" colSpan={3}>
+                        <TableCell colSpan={3} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                           Chưa có danh sách sinh viên cho cuộc họp này.
-                        </td>
+                        </TableCell>
                       </TableRow>
                     ) : (
                       detailStudentList.map(s => (
                         <TableRow
                           key={s._id}
-                          className="border-b border-gray-100 dark:border-gray-800"
+                          className="border-b border-gray-100 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:bg-white/[0.03]"
                         >
-                          <TableCell className="px-3 py-2">
+                          <TableCell className="px-4 py-2.5 font-medium text-gray-900 dark:text-white">
                             {s.profile?.full_name ?? s.username ?? 'Sinh viên'}
                           </TableCell>
-                          <TableCell className="px-3 py-2">{s.email ?? '—'}</TableCell>
-                          <TableCell className="px-3 py-2">
+                          <TableCell className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-400">{s.email ?? '—'}</TableCell>
+                          <TableCell className="px-4 py-2.5 font-mono text-sm text-gray-800 dark:text-gray-200">
                             {s.student_info?.student_code ?? '—'}
                           </TableCell>
                         </TableRow>
@@ -489,24 +604,27 @@ export default function AdvisorMeetingsPage() {
                   </TableBody>
                 </Table>
               ) : feedbackLoading ? (
-                <p className="py-8 text-center text-gray-500">Đang tải phản hồi...</p>
+                <div className="flex items-center justify-center gap-2 py-12 text-sm text-gray-500">
+                  <TimeIcon className="size-5 animate-pulse" aria-hidden />
+                  Đang tải phản hồi...
+                </div>
               ) : (
-                <Table className="text-left text-sm">
+                <Table className="text-left text-sm" framed={false}>
                   <TableHeader>
-                    <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                    <TableRow className="border-b border-gray-200 bg-gray-50/90 dark:border-gray-800 dark:bg-white/[0.04]">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Thời gian
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Lớp / Cố vấn
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Cảm xúc
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Đánh giá
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Nội dung
                       </TableCell>
                     </TableRow>
@@ -514,31 +632,33 @@ export default function AdvisorMeetingsPage() {
                   <TableBody>
                     {feedbackRows.length === 0 ? (
                       <TableRow>
-                        <td className="px-3 py-6 text-gray-500" colSpan={5}>
+                        <TableCell colSpan={5} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                           Chưa có phản hồi sau buổi họp này.
-                        </td>
+                        </TableCell>
                       </TableRow>
                     ) : (
                       feedbackRows.map(fb => (
                         <TableRow
                           key={fb._id}
-                          className="border-b border-gray-100 dark:border-gray-800"
+                          className="border-b border-gray-100 hover:bg-gray-50/80 dark:border-gray-800 dark:hover:bg-white/[0.03]"
                         >
-                          <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
+                          <TableCell className="whitespace-nowrap px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300">
                             {formatDt(fb.submitted_at)}
                           </TableCell>
-                          <TableCell className="max-w-[200px] px-3 py-2 text-xs text-gray-600 dark:text-gray-400">
+                          <TableCell className="max-w-[200px] px-4 py-2.5 text-xs text-gray-600 dark:text-gray-400">
                             <div className="line-clamp-2">{fb.class_display || '—'}</div>
                             <div className="mt-0.5 line-clamp-1 text-gray-500">
                               {fb.advisor_display || '—'}
                             </div>
                           </TableCell>
-                          <TableCell className="px-3 py-2">{fb.sentiment_label ?? '—'}</TableCell>
-                          <TableCell className="px-3 py-2">
+                          <TableCell className="px-4 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-200">
+                            {fb.sentiment_label ?? '—'}
+                          </TableCell>
+                          <TableCell className="px-4 py-2.5 tabular-nums text-sm font-semibold text-gray-900 dark:text-white">
                             {fb.rating != null ? fb.rating : '—'}
                           </TableCell>
-                          <TableCell className="max-w-md px-3 py-2">
-                            <span className="line-clamp-3 text-gray-700 dark:text-gray-300">
+                          <TableCell className="max-w-md px-4 py-2.5">
+                            <span className="line-clamp-3 text-sm text-gray-700 dark:text-gray-300">
                               {fb.feedback_text}
                             </span>
                           </TableCell>
@@ -549,6 +669,19 @@ export default function AdvisorMeetingsPage() {
                 </Table>
               )}
             </div>
+            <div className="mt-6 flex justify-end border-t border-gray-100 pt-4 dark:border-gray-800">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="font-semibold"
+                startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
+                onClick={closeDetail}
+              >
+                Đóng
+              </Button>
+            </div>
+            </div>
           </>
         ) : null}
       </Modal>
@@ -556,86 +689,125 @@ export default function AdvisorMeetingsPage() {
       <Modal
         isOpen={createOpen}
         onClose={() => !saving && setCreateOpen(false)}
-        className="max-w-lg p-6"
+        className="max-w-lg overflow-hidden p-0"
       >
-        <h3 className="mb-4 text-lg font-semibold">Tạo cuộc họp tư vấn</h3>
-        {loadingPrep ? (
-          <p className="text-sm text-gray-500">Đang tải...</p>
-        ) : (
-          <div className="space-y-4">
-            <p className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-white/[0.04] dark:text-gray-300">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Lớp cố vấn
-              </span>
-              <span className="mt-1 block font-medium text-gray-900 dark:text-white/90">
-                {classDisplayLabel || 'Chưa có lớp'}
-              </span>
-            </p>
+        <div className="border-b border-gray-100 bg-gradient-to-r from-brand-50/95 to-violet-50/50 px-6 py-4 dark:border-gray-800 dark:from-brand-950/50 dark:to-gray-900">
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/90 text-brand-600 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/10 dark:text-brand-300 dark:ring-brand-500/25">
+              <PlusIcon className="size-5" aria-hidden />
+            </span>
             <div>
-              <Label htmlFor="m-term">Học kỳ (tuỳ chọn)</Label>
-              <select
-                id="m-term"
-                key={termSelectKey}
-                value={termId}
-                onChange={e => setTermId(e.target.value)}
-                disabled={saving}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                <option value="">— Không gửi term_id —</option>
-                {termOptions.map(o => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="m-start">Bắt đầu</Label>
-              <input
-                id="m-start"
-                type="datetime-local"
-                value={meetingStart}
-                onChange={e => setMeetingStart(e.target.value)}
-                disabled={saving}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              />
-            </div>
-            <div>
-              <Label htmlFor="m-end">Kết thúc</Label>
-              <input
-                id="m-end"
-                type="datetime-local"
-                value={meetingEnd}
-                onChange={e => setMeetingEnd(e.target.value)}
-                disabled={saving}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              />
-            </div>
-            <MultiSelect
-              label="Sinh viên tham dự"
-              options={studentOptions}
-              value={selectedStudents}
-              onChange={setSelectedStudents}
-              disabled={saving || !classId}
-              placeholder="Chọn sinh viên trong lớp"
-            />
-            <div>
-              <Label htmlFor="m-notes">Nội dung / ghi chú buổi họp (≥ {NOTES_MIN} ký tự)</Label>
-              <TextArea
-                rows={5}
-                value={notesRaw}
-                onChange={v => setNotesRaw(v)}
-                disabled={saving}
-              />
+              <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white/90">
+                Tạo cuộc họp tư vấn
+              </h3>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                Chọn khung giờ, sinh viên và ghi chú tối thiểu {NOTES_MIN} ký tự.
+              </p>
             </div>
           </div>
-        )}
-        <div className="mt-6 flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={saving} onClick={() => setCreateOpen(false)}>
+        </div>
+        <div className="p-6">
+          {loadingPrep ? (
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-500">
+              <TimeIcon className="size-5 animate-pulse" aria-hidden />
+              Đang tải dữ liệu lớp...
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-brand-100/80 bg-gradient-to-br from-brand-50/60 to-white px-4 py-3 dark:border-brand-500/20 dark:from-brand-950/30 dark:to-gray-900/40">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-300">
+                  Lớp cố vấn
+                </span>
+                <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white/90">
+                  {classDisplayLabel || 'Chưa có lớp'}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="m-term">Học kỳ (tuỳ chọn)</Label>
+                <select
+                  id="m-term"
+                  key={termSelectKey}
+                  value={termId}
+                  onChange={e => setTermId(e.target.value)}
+                  disabled={saving}
+                  className="mt-1.5 h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                >
+                  <option value="">— Không gửi term_id —</option>
+                  {termOptions.map(o => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="m-start">Bắt đầu</Label>
+                <input
+                  id="m-start"
+                  type="datetime-local"
+                  value={meetingStart}
+                  onChange={e => setMeetingStart(e.target.value)}
+                  disabled={saving}
+                  className="mt-1.5 h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <Label htmlFor="m-end">Kết thúc</Label>
+                <input
+                  id="m-end"
+                  type="datetime-local"
+                  value={meetingEnd}
+                  onChange={e => setMeetingEnd(e.target.value)}
+                  disabled={saving}
+                  className="mt-1.5 h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                />
+              </div>
+              <MultiSelect
+                label="Sinh viên tham dự"
+                options={studentOptions}
+                value={selectedStudents}
+                onChange={setSelectedStudents}
+                disabled={saving || !classId}
+                placeholder="Chọn sinh viên trong lớp"
+              />
+              <div>
+                <Label htmlFor="m-notes">Nội dung / ghi chú buổi họp (≥ {NOTES_MIN} ký tự)</Label>
+                <TextArea
+                  rows={5}
+                  value={notesRaw}
+                  onChange={v => setNotesRaw(v)}
+                  disabled={saving}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-white/[0.02]">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={saving}
+            className="font-semibold"
+            startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
+            onClick={() => setCreateOpen(false)}
+          >
             Hủy
           </Button>
-          <Button size="sm" disabled={saving || loadingPrep} onClick={() => void submitCreate()}>
-            {saving ? 'Đang lưu...' : 'Tạo'}
+          <Button
+            size="sm"
+            variant="primary"
+            className="font-semibold shadow-md"
+            disabled={saving || loadingPrep}
+            startIcon={
+              saving ? (
+                <TimeIcon className="size-4 shrink-0 animate-pulse" aria-hidden />
+              ) : (
+                <CheckLineIcon className="size-4 shrink-0" aria-hidden />
+              )
+            }
+            onClick={() => void submitCreate()}
+          >
+            {saving ? 'Đang lưu...' : 'Tạo buổi họp'}
           </Button>
         </div>
       </Modal>

@@ -87,7 +87,14 @@ const AppSideBarAdvisor: React.FC = () => {
                 width={40}
                 height={40}
               />
-              <span className="text-xl font-semibold text-blue-600">Advisor — CVHT</span>
+              <div className="flex min-w-0 flex-col leading-tight">
+                <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-lg font-semibold tracking-tight text-transparent dark:from-brand-400 dark:to-brand-300">
+                  Advisor
+                </span>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  CVHT
+                </span>
+              </div>
             </div>
           ) : (
             <img src="/images/logo/logo-icon.svg" alt="" width={32} height={32} />

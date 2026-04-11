@@ -19,7 +19,7 @@ const ProtectLayoutContent: React.FC = () => {
         } ${isMobileOpen ? 'ml-0' : ''}`}
       >
         <AppHeader />
-        <div className="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
+        <div className="mx-auto min-h-[calc(100dvh-4rem)] max-w-(--breakpoint-2xl) bg-gray-50/95 bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(70,95,255,0.14),transparent_58%)] px-4 py-6 md:px-6 md:py-8 dark:bg-gray-950 dark:bg-[radial-gradient(ellipse_85%_55%_at_50%_-20%,rgba(99,102,241,0.16),transparent_55%)]">
           <Outlet />
         </div>
       </div>

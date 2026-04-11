@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Link } from 'react-router'
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from '../../icons'
+import { ArrowRightIcon, ChevronLeftIcon, EyeCloseIcon, EyeIcon } from '../../icons'
 import Label from '../form/Label'
 import InputField from '../form/input/InputField'
 import Checkbox from '../form/input/Checkbox'
@@ -24,31 +24,31 @@ export default function SignInForm({ onSignIn, isSubmitting }: SignInFormProps) 
   }
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="w-full max-w-md pt-10 mx-auto">
+    <div className="flex flex-1 flex-col bg-white px-4 py-10 dark:bg-gray-950 sm:px-8 lg:w-1/2 lg:py-0">
+      <div className="mx-auto w-full max-w-md pt-2 sm:pt-6 lg:pt-10">
         <Link
-          to="/signin"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          to="/"
+          className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white/90"
         >
-          <ChevronLeftIcon className="size-5" />
-          Back
+          <ChevronLeftIcon className="size-5 shrink-0" />
+          Về trang chủ
         </Link>
       </div>
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-        <div>
-          <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign In
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center pb-12">
+        <div className="rounded-2xl border border-gray-200/90 bg-white p-6 shadow-theme-md dark:border-gray-800 dark:bg-gray-900/60 dark:shadow-none sm:p-8">
+          <div className="mb-8">
+            <h1 className="mb-2 text-balance font-semibold tracking-tight text-gray-900 text-title-sm dark:text-white sm:text-title-md">
+              Đăng nhập
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign in!
+            <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+              Nhập email và mật khẩu được cấp để vào bảng điều khiển.
             </p>
           </div>
           <div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+                className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-theme-xs transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:hover:border-gray-600 dark:hover:bg-white/[0.04]"
               >
                 <svg
                   width="20"
@@ -74,11 +74,11 @@ export default function SignInForm({ onSignIn, isSubmitting }: SignInFormProps) 
                     fill="#EB4335"
                   />
                 </svg>
-                Sign in with Google
+                Google
               </button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+                className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-theme-xs transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:hover:border-gray-600 dark:hover:bg-white/[0.04]"
               >
                 <svg
                   width="21"
@@ -90,21 +90,19 @@ export default function SignInForm({ onSignIn, isSubmitting }: SignInFormProps) 
                 >
                   <path d="M15.6705 1.875H18.4272L12.4047 8.75833L19.4897 18.125H13.9422L9.59717 12.4442L4.62554 18.125H1.86721L8.30887 10.7625L1.51221 1.875H7.20054L11.128 7.0675L15.6705 1.875ZM14.703 16.475H16.2305L6.37054 3.43833H4.73137L14.703 16.475Z" />
                 </svg>
-                Sign in with X
+                X
               </button>
             </div>
-            <div className="relative py-3 sm:py-5">
+            <div className="relative py-4 sm:py-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+                <div className="w-full border-t border-gray-200 dark:border-gray-800" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
-                  Or
-                </span>
+              <div className="relative flex justify-center text-xs font-medium uppercase tracking-wider text-gray-400">
+                <span className="bg-white px-3 py-1 dark:bg-gray-900">Hoặc email</span>
               </div>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
                   <Label htmlFor="signin-email">
                     Email <span className="text-error-500">*</span>{' '}
@@ -146,36 +144,46 @@ export default function SignInForm({ onSignIn, isSubmitting }: SignInFormProps) 
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <Checkbox checked={isChecked} onChange={setIsChecked} />
-                    <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Keep me logged in
+                    <span className="text-theme-sm font-normal text-gray-700 dark:text-gray-400">
+                      Duy trì đăng nhập
                     </span>
                   </div>
                   <Link
                     to="/reset-password"
-                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                    className="text-sm font-medium text-brand-600 transition-colors duration-200 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
                   >
-                    Forgot password?
+                    Quên mật khẩu?
                   </Link>
                 </div>
-                <div>
-                  <Button className="w-full" size="sm" disabled={isSubmitting}>
-                    {isSubmitting ? 'Signing in...' : 'Sign in'}
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="md"
+                    disabled={isSubmitting}
+                    endIcon={
+                      isSubmitting ? undefined : (
+                        <ArrowRightIcon className="size-[18px] shrink-0 opacity-95" aria-hidden />
+                      )
+                    }
+                  >
+                    {isSubmitting ? 'Đang đăng nhập…' : 'Đăng nhập'}
                   </Button>
                 </div>
               </div>
             </form>
 
-            <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Don&apos;t have an account? {''}
+            <div className="mt-6 border-t border-gray-100 pt-6 dark:border-gray-800">
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400 sm:text-start">
+                Chưa có tài khoản?{' '}
                 <Link
                   to="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                  className="font-semibold text-brand-600 transition-colors duration-200 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
                 >
-                  Sign Up
+                  Đăng ký
                 </Link>
               </p>
             </div>

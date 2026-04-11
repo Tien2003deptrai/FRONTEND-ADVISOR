@@ -12,6 +12,15 @@ import { academicService } from '@/services/AcademicService'
 import { dashboardService } from '@/services/DashboardService'
 import { masterDataService } from '@/services/MasterDataService'
 import { studentService } from '@/services/StudentService'
+import {
+  CheckLineIcon,
+  CloseLineIcon,
+  GroupIcon,
+  ListIcon,
+  PencilIcon,
+  TableIcon,
+  TimeIcon,
+} from '@/icons'
 
 type AcademicRow = {
   term_id?: string | { _id?: string; term_code?: string; term_name?: string }
@@ -270,43 +279,84 @@ export default function AcademicPage() {
       <PageMeta title="Học tập | Sinh viên" description="Nộp / cập nhật dữ liệu học tập" />
       <PageBreadcrumb pageTitle="Học tập" />
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-          Theo dõi và cập nhật chỉ số học tập theo từng học kỳ. Dùng «Nộp / cập nhật» để ghi nhận dữ
-          liệu mới.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => void loadTable()} disabled={loading}>
+      <section
+        className="relative mb-8 overflow-hidden rounded-2xl border border-brand-200/45 bg-gradient-to-br from-brand-50 via-white to-teal-50/35 p-5 shadow-[0_12px_40px_-14px_rgba(70,95,255,0.24)] ring-1 ring-brand-500/10 dark:border-brand-500/20 dark:from-brand-950/45 dark:via-gray-900 dark:to-teal-950/20 dark:ring-brand-400/10 sm:p-6 md:flex md:items-center md:justify-between md:gap-8"
+        aria-labelledby="academic-hero-title"
+      >
+        <div
+          className="pointer-events-none absolute -right-14 -top-18 size-44 rounded-full bg-teal-400/15 blur-3xl dark:bg-teal-500/10"
+          aria-hidden
+        />
+        <div className="relative z-10 max-w-2xl">
+          <p className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand-700 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/5 dark:text-brand-300 dark:ring-brand-500/25">
+            <TableIcon className="size-3.5 shrink-0" aria-hidden />
+            Dữ liệu học tập
+          </p>
+          <h2
+            id="academic-hero-title"
+            className="mt-3 text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl"
+          >
+            Nộp chỉ số theo học kỳ, xem lịch sử và liên hệ cố vấn
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+            Bảng bên dưới đồng bộ từ dashboard; nút chính mở form gửi{' '}
+            <code className="rounded bg-white/80 px-1 text-xs dark:bg-white/10">POST /academic/submit</code>.
+          </p>
+        </div>
+        <div className="relative z-10 mt-5 flex shrink-0 flex-wrap gap-2 md:mt-0">
+          <Button
+            size="sm"
+            variant="outline"
+            className="font-semibold"
+            onClick={() => void loadTable()}
+            disabled={loading}
+            startIcon={<ListIcon className="size-4 shrink-0" aria-hidden />}
+          >
             Làm mới bảng
           </Button>
-          <Button size="sm" onClick={openModal}>
+          <Button
+            size="md"
+            variant="primary"
+            className="shadow-lg"
+            startIcon={<PencilIcon className="size-[18px] shrink-0" aria-hidden />}
+            onClick={openModal}
+          >
             Nộp / cập nhật
           </Button>
         </div>
-      </div>
+      </section>
 
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm transition-shadow duration-200 dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
-        <div className="mb-4 flex items-center justify-between gap-2 border-b border-gray-100 pb-3 dark:border-gray-800">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white/90">
+      <div className="mb-6 rounded-2xl border border-gray-200/90 bg-white p-5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.1)] ring-1 ring-gray-900/[0.035] transition-shadow duration-200 dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] dark:ring-white/[0.05] sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-4 dark:border-gray-800">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/90">
+            <GroupIcon className="size-6 text-brand-500 dark:text-brand-400" aria-hidden />
             Cố vấn học tập của tôi
           </h2>
           <Button
             size="sm"
             variant="outline"
+            className="font-semibold"
             onClick={() => void loadMyAdvisor()}
             disabled={advisorLoading}
+            startIcon={
+              advisorLoading ? (
+                <TimeIcon className="size-4 shrink-0 animate-pulse" aria-hidden />
+              ) : (
+                <ListIcon className="size-4 shrink-0" aria-hidden />
+              )
+            }
           >
             {advisorLoading ? 'Đang tải...' : 'Làm mới'}
           </Button>
         </div>
         {!advisorData?.advisor ? (
-          <p className="text-sm text-gray-500">
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-4 py-8 text-center text-sm text-gray-600 dark:border-gray-700 dark:bg-white/[0.02] dark:text-gray-400">
             Chưa có thông tin cố vấn học tập. Vui lòng liên hệ quản trị để gán lớp/cố vấn.
-          </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-xl border border-brand-100/80 bg-gradient-to-br from-brand-50/50 to-white p-4 dark:border-brand-500/20 dark:from-brand-950/25 dark:to-gray-900/50">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-300">
                 Họ tên cố vấn
               </p>
               <p className="mt-1 font-medium text-gray-900 dark:text-white/90">
@@ -326,8 +376,8 @@ export default function AcademicPage() {
                 {advisorData.advisor.advisor_info?.title || '—'}
               </p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-xl border border-gray-200/90 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-white/[0.03]">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 Lớp cố vấn
               </p>
               <p className="mt-1 font-medium text-gray-900 dark:text-white/90">
@@ -356,46 +406,51 @@ export default function AcademicPage() {
         )}
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:shadow-none">
-        <h2 className="mb-4 border-b border-gray-100 pb-3 text-base font-semibold text-gray-900 dark:border-gray-800 dark:text-white/90">
+      <div className="rounded-2xl border border-gray-200/90 bg-white p-5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.1)] ring-1 ring-gray-900/[0.035] dark:border-gray-800 dark:bg-gray-900/50 dark:ring-white/[0.05] sm:p-6">
+        <h2 className="mb-4 flex items-center gap-2 border-b border-gray-100 pb-4 text-lg font-bold text-gray-900 dark:border-gray-800 dark:text-white/90">
+          <TimeIcon className="size-6 text-brand-500 dark:text-brand-400" aria-hidden />
           Lịch sử học tập
         </h2>
         {loading ? (
-          <p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
+          <div className="space-y-3 py-4" aria-busy="true">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="h-11 animate-pulse rounded-lg bg-gray-100 dark:bg-white/10" />
+            ))}
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <Table className="text-left text-sm">
               <TableHeader>
-                <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                <TableRow className="border-b border-gray-200 bg-gray-50/90 dark:border-gray-800 dark:bg-white/[0.04]">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Học kỳ
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Ghi nhận
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     GPA hiện tại
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     GPA trước
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Môn trượt
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Tỉ lệ tham dự
                   </TableCell>
-                  <TableCell isHeader className="px-3 py-2 font-semibold">
-                    Stress(1-5)
+                  <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Stress (1–5)
                   </TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <td className="px-3 py-6 text-gray-500" colSpan={7}>
-                      Chưa có bản ghi. Bấm «Nộp / cập nhật».
-                    </td>
+                    <TableCell colSpan={7} className="px-4 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                      Chưa có bản ghi. Bấm <span className="font-semibold text-brand-600">Nộp / cập nhật</span>.
+                    </TableCell>
                   </TableRow>
                 ) : (
                   [...rows]
@@ -407,25 +462,25 @@ export default function AcademicPage() {
                     .map((row, i) => (
                       <TableRow
                         key={`${termIdOf(row)}-${row.recorded_at}-${i}`}
-                        className="border-b border-gray-100 dark:border-gray-800"
+                        className="border-b border-gray-100 transition-colors hover:bg-gray-50/80 dark:border-gray-800 dark:hover:bg-white/[0.03]"
                       >
-                        <TableCell className="max-w-[220px] px-3 py-2 text-gray-800 dark:text-gray-200">
+                        <TableCell className="max-w-[220px] px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
                           {resolveTermLabel(row)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap px-3 py-2 text-xs">
+                        <TableCell className="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-300">
                           {row.recorded_at
                             ? new Date(row.recorded_at).toLocaleString('vi-VN')
                             : '—'}
                         </TableCell>
-                        <TableCell className="px-3 py-2">{row.gpa_current ?? '—'}</TableCell>
-                        <TableCell className="px-3 py-2">{row.gpa_prev_sem ?? '—'}</TableCell>
-                        <TableCell className="px-3 py-2">{row.num_failed ?? '—'}</TableCell>
-                        <TableCell className="px-3 py-2">
+                        <TableCell className="px-4 py-3 tabular-nums">{row.gpa_current ?? '—'}</TableCell>
+                        <TableCell className="px-4 py-3 tabular-nums">{row.gpa_prev_sem ?? '—'}</TableCell>
+                        <TableCell className="px-4 py-3 tabular-nums">{row.num_failed ?? '—'}</TableCell>
+                        <TableCell className="px-4 py-3 tabular-nums">
                           {row.attendance_rate != null
                             ? `${(Number(row.attendance_rate) * 100).toFixed(0)}%`
                             : '—'}
                         </TableCell>
-                        <TableCell className="px-3 py-2 text-xs">
+                        <TableCell className="px-4 py-3 text-xs tabular-nums font-medium text-gray-800 dark:text-gray-200">
                           {row.stress_level ?? '—'}
                         </TableCell>
                       </TableRow>
@@ -440,15 +495,26 @@ export default function AcademicPage() {
       <Modal
         isOpen={modalOpen}
         onClose={() => !saving && setModalOpen(false)}
-        className="max-h-[90vh] max-w-2xl overflow-y-auto p-6"
+        className="max-h-[90vh] max-w-2xl overflow-y-auto p-0"
       >
-        <h3 className="mb-4 text-lg font-semibold">Nộp / cập nhật dữ liệu học tập</h3>
-        <p className="mb-4 text-xs text-gray-500">
-          API <code>POST /academic/submit</code> — upsert theo học kỳ. Các trường số là tùy chọn
-          ngoài học kỳ.
-        </p>
-        <p className="mb-4 text-xs text-amber-700">
-          Lưu ý: Bạn chỉ được cập nhật dữ liệu cách nhau ít nhất 7 ngày.
+        <div className="border-b border-gray-100 bg-gradient-to-r from-brand-50/95 to-teal-50/40 px-6 py-4 dark:border-gray-800 dark:from-brand-950/50 dark:to-gray-900">
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/90 text-brand-600 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/10 dark:text-brand-300 dark:ring-brand-500/25">
+              <PencilIcon className="size-5" aria-hidden />
+            </span>
+            <div>
+              <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white/90">
+                Nộp / cập nhật dữ liệu học tập
+              </h3>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                API <code className="rounded bg-white/80 px-1 font-mono text-[11px] dark:bg-white/10">POST /academic/submit</code> — upsert theo học kỳ.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="max-h-[calc(90vh-8rem)] overflow-y-auto p-6">
+        <p className="mb-4 rounded-xl border border-amber-100/80 bg-amber-50/60 px-3 py-2 text-xs font-medium text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+          Lưu ý: chỉ được cập nhật cách nhau ít nhất <span className="font-bold">7 ngày</span>.
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -569,12 +635,33 @@ export default function AcademicPage() {
             />
           </div>
         </div>
-        <div className="mt-6 flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={saving} onClick={() => setModalOpen(false)}>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-white/[0.02]">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={saving}
+            className="font-semibold"
+            startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
+            onClick={() => setModalOpen(false)}
+          >
             Hủy
           </Button>
-          <Button size="sm" disabled={saving} onClick={() => void submit()}>
-            {saving ? 'Đang gửi...' : 'Gửi'}
+          <Button
+            size="sm"
+            variant="primary"
+            className="font-semibold shadow-md"
+            disabled={saving}
+            startIcon={
+              saving ? (
+                <TimeIcon className="size-4 shrink-0 animate-pulse" aria-hidden />
+              ) : (
+                <CheckLineIcon className="size-4 shrink-0" aria-hidden />
+              )
+            }
+            onClick={() => void submit()}
+          >
+            {saving ? 'Đang gửi...' : 'Gửi dữ liệu'}
           </Button>
         </div>
       </Modal>

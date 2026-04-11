@@ -11,6 +11,7 @@ import {
   SENTIMENT_SKIP,
   type FeedbackCreateForm,
 } from '@/models/Feedback'
+import { ChatIcon, CloseLineIcon, PaperPlaneIcon, TimeIcon } from '@/icons'
 
 type Props = {
   isOpen: boolean
@@ -103,11 +104,26 @@ export default function FeedbackCreateModal({
     <Modal
       isOpen={isOpen}
       onClose={() => !saving && onClose()}
-      className="max-h-[90vh] max-w-lg overflow-y-auto p-6"
+      className="max-h-[90vh] max-w-lg overflow-hidden p-0"
     >
-      <h3 className="mb-2 text-lg font-semibold">Gửi phản hồi sau buổi SHCVHT</h3>
-      <p className="mb-4 text-xs text-red-500">
-        Chọn buổi họp từ danh sách rồi gửi phản hồi. Mỗi sinh viên 1 lần feedback
+      <div className="border-b border-gray-100 bg-gradient-to-r from-brand-50/95 to-violet-50/50 px-6 py-4 dark:border-gray-800 dark:from-brand-950/50 dark:to-gray-900">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/90 text-brand-600 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/10 dark:text-brand-300 dark:ring-brand-500/25">
+            <ChatIcon className="size-5" aria-hidden />
+          </span>
+          <div>
+            <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white/90">
+              Gửi phản hồi sau buổi SHCVHT
+            </h3>
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              Mỗi buổi họp chỉ một lần phản hồi cho mỗi sinh viên.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="max-h-[calc(90vh-7rem)] overflow-y-auto p-6">
+      <p className="mb-4 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-2 text-xs font-medium text-amber-950 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-100">
+        Chọn buổi họp từ danh sách, nhập nội dung tối thiểu 20 ký tự trước khi gửi.
       </p>
       <div className="space-y-3">
         <div>
@@ -142,16 +158,33 @@ export default function FeedbackCreateModal({
           />
         </div>
         </div>
-      <div className="mt-6 flex justify-end gap-2">
-        <Button size="sm" variant="outline" disabled={saving} onClick={onClose}>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-white/[0.02]">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={saving}
+          className="font-semibold"
+          startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
+          onClick={onClose}
+        >
           Hủy
         </Button>
         <Button
           size="sm"
+          variant="primary"
+          className="font-semibold shadow-md"
           disabled={saving || loadingMeetings || meetingOptions.length === 0}
+          startIcon={
+            saving ? (
+              <TimeIcon className="size-4 shrink-0 animate-pulse" aria-hidden />
+            ) : (
+              <PaperPlaneIcon className="size-4 shrink-0" aria-hidden />
+            )
+          }
           onClick={() => void handleSubmit()}
         >
-          {saving ? 'Đang gửi...' : 'Gửi'}
+          {saving ? 'Đang gửi...' : 'Gửi phản hồi'}
         </Button>
       </div>
     </Modal>

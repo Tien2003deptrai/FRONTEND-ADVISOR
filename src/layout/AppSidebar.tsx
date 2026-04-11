@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 
 // Assume these icons are imported from an icon library
@@ -253,7 +253,9 @@ const AppSidebar: React.FC = () => {
                   width={40}
                   height={40}
                 />
-                <span className="text-2xl font-semibold text-blue-600">Advisor - AI</span>
+                <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-2xl font-semibold tracking-tight text-transparent dark:from-brand-400 dark:to-brand-300">
+                  Advisor
+                </span>
               </div>
             </>
           ) : (

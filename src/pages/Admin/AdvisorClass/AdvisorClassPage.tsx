@@ -15,6 +15,19 @@ import { userService } from '@/services/UserService'
 import { studentService } from '@/services/StudentService'
 import { masterDataService } from '@/services/MasterDataService'
 import useAuthStore from '@/stores/authStore'
+import {
+  AngleLeftIcon,
+  AngleRightIcon,
+  BoxIconLine,
+  CheckLineIcon,
+  CloseLineIcon,
+  EyeIcon,
+  GroupIcon,
+  PencilIcon,
+  PlusIcon,
+  TableIcon,
+  UserCircleIcon,
+} from '@/icons'
 
 type TabKey = 'class' | 'members'
 
@@ -85,6 +98,15 @@ type UpsertClassFormState = {
 }
 
 const MAJOR_NONE = '__none__'
+
+function classStatusBadgeClass(status?: string | null): string {
+  const s = (status ?? '').toUpperCase()
+  if (s === 'ACTIVE')
+    return 'inline-flex items-center rounded-full bg-emerald-500/12 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-500/25 dark:text-emerald-300 dark:ring-emerald-400/30'
+  if (s === 'INACTIVE')
+    return 'inline-flex items-center rounded-full bg-gray-500/12 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-gray-700 ring-1 ring-gray-400/25 dark:text-gray-300 dark:ring-gray-500/40'
+  return 'inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-white/10 dark:text-gray-400'
+}
 
 /** ObjectId hoặc object populate từ Mongo → chuỗi id */
 function normalizeRefId(raw: unknown): string {
@@ -514,63 +536,126 @@ export default function AdvisorClassPage() {
       />
       <PageBreadcrumb pageTitle="Lớp cố vấn & thành viên" />
 
-      <div className="space-y-6">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setTab('class')}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                tab === 'class'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Lớp cố vấn
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('members')}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                tab === 'members'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Thành viên lớp
-            </button>
-          </div>
+      <section
+        className="relative mb-8 overflow-hidden rounded-2xl border border-brand-200/45 bg-gradient-to-br from-brand-50 via-white to-violet-50/40 p-5 shadow-[0_12px_40px_-14px_rgba(70,95,255,0.28)] ring-1 ring-brand-500/10 dark:border-brand-500/20 dark:from-brand-950/45 dark:via-gray-900 dark:to-violet-950/25 dark:ring-brand-400/10 sm:p-6 md:flex md:items-center md:justify-between md:gap-8"
+        aria-labelledby="ac-hero-title"
+      >
+        <div className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full bg-brand-400/20 blur-3xl dark:bg-brand-500/15" aria-hidden />
+        <div className="relative z-10 max-w-2xl">
+          <p className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand-700 shadow-sm ring-1 ring-brand-200/70 dark:bg-white/5 dark:text-brand-300 dark:ring-brand-500/25">
+            <BoxIconLine className="size-3.5 shrink-0" aria-hidden />
+            Quản trị lớp SHCVHT
+          </p>
+          <h2 id="ac-hero-title" className="mt-3 text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+            Gán lớp cố vấn & đồng bộ thành viên
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+            Chọn cố vấn (ADMIN), tạo hoặc cập nhật một lớp ACTIVE duy nhất, rồi thêm sinh viên đúng khoa/ngành — một luồng rõ ràng, ít nhầm lẫn.
+          </p>
         </div>
+        <div className="relative z-10 mt-5 flex flex-wrap gap-3 md:mt-0">
+          <div className="rounded-xl border border-white/80 bg-white/95 px-4 py-3 shadow-md ring-1 ring-gray-900/[0.04] dark:border-white/10 dark:bg-gray-900/85 dark:ring-white/10">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tab</p>
+            <p className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-white">
+              {tab === 'class' ? 'Thông tin lớp' : 'Thành viên'}
+            </p>
+          </div>
+          {advisorClass ? (
+            <div className="rounded-xl border border-emerald-200/70 bg-gradient-to-b from-emerald-50 to-white px-4 py-3 shadow-md ring-1 ring-emerald-500/15 dark:border-emerald-500/25 dark:from-emerald-950/40 dark:to-gray-900">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">Lớp</p>
+              <p className="mt-0.5 font-mono text-sm font-bold text-gray-900 dark:text-white">{advisorClass.class_code}</p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-amber-200/60 bg-amber-50/90 px-4 py-3 shadow-md dark:border-amber-500/25 dark:bg-amber-950/30">
+              <p className="text-[10px] font-bold uppercase text-amber-900 dark:text-amber-200">Trạng thái</p>
+              <p className="mt-0.5 text-sm font-semibold text-amber-900 dark:text-amber-100">Chưa có lớp</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="space-y-8">
+        <nav
+          className="flex flex-wrap gap-2 rounded-2xl border border-gray-200/90 bg-white/90 p-1.5 shadow-[0_4px_20px_-6px_rgba(15,23,42,0.08)] ring-1 ring-gray-900/[0.03] dark:border-gray-800 dark:bg-gray-900/60 dark:ring-white/[0.04]"
+          aria-label="Chế độ xem"
+        >
+          <button
+            type="button"
+            onClick={() => setTab('class')}
+            aria-current={tab === 'class' ? 'page' : undefined}
+            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200 sm:flex-none sm:px-6 ${
+              tab === 'class'
+                ? 'bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-[0_6px_20px_-4px_rgba(70,95,255,0.45)] ring-1 ring-brand-400/30'
+                : 'text-gray-600 hover:bg-gray-100/90 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/6 dark:hover:text-white'
+            }`}
+          >
+            <TableIcon className="size-5 shrink-0 opacity-95" aria-hidden />
+            Lớp cố vấn
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('members')}
+            aria-current={tab === 'members' ? 'page' : undefined}
+            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200 sm:flex-none sm:px-6 ${
+              tab === 'members'
+                ? 'bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-[0_6px_20px_-4px_rgba(70,95,255,0.45)] ring-1 ring-brand-400/30'
+                : 'text-gray-600 hover:bg-gray-100/90 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/6 dark:hover:text-white'
+            }`}
+          >
+            <GroupIcon className="size-5 shrink-0 opacity-95" aria-hidden />
+            Thành viên lớp
+          </button>
+        </nav>
 
         {tab === 'class' && (
-          <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
+          <div className="rounded-2xl border border-gray-200/90 bg-white p-5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)] ring-1 ring-gray-900/[0.035] dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] dark:ring-white/[0.05] sm:p-6">
             {isAdmin && (
-              <div className="mb-4 max-w-xl">
-                <Label>Chọn cố vấn</Label>
-                <Select
-                  key={`adv-${advisors.length}`}
-                  options={advisorOptions}
-                  placeholder="Chọn tài khoản ADVISOR"
-                  onChange={setSelectedAdvisorId}
-                  defaultValue={selectedAdvisorId}
-                />
+              <div className="mb-6 max-w-xl rounded-xl border border-brand-100/80 bg-gradient-to-r from-brand-50/50 to-transparent p-4 dark:border-brand-500/15 dark:from-brand-950/30">
+                <Label className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                  <UserCircleIcon className="size-4 text-brand-600 dark:text-brand-400" aria-hidden />
+                  Chọn cố vấn
+                </Label>
+                <div className="mt-2">
+                  <Select
+                    key={`adv-${advisors.length}`}
+                    options={advisorOptions}
+                    placeholder="Chọn tài khoản ADVISOR"
+                    onChange={setSelectedAdvisorId}
+                    defaultValue={selectedAdvisorId}
+                  />
+                </div>
                 {selectedAdvisorId && !advisorOrgDeptId ? (
-                  <p className="mt-2 text-sm text-error-500 dark:text-error-400">
+                  <p className="mt-3 rounded-lg border border-error-200 bg-error-50/80 px-3 py-2 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-950/40 dark:text-error-300">
                     {ADVISOR_NO_DEPT_MSG}
                   </p>
                 ) : null}
               </div>
             )}
 
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Thông tin lớp
-              </h2>
+            <div className="mb-5 flex flex-col gap-4 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                  Nội dung chính
+                </p>
+                <h3 className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                  <TableIcon className="size-6 text-brand-500 dark:text-brand-400" aria-hidden />
+                  Thông tin lớp
+                </h3>
+              </div>
               {canManageClass && (
                 <Button
+                  type="button"
                   size="sm"
-                  onClick={() => void openUpsertModal()}
+                  variant="primary"
                   disabled={isAdmin && !adminCanUpsertClass}
+                  startIcon={
+                    advisorClass ? (
+                      <PencilIcon className="size-4 shrink-0" aria-hidden />
+                    ) : (
+                      <PlusIcon className="size-4 shrink-0" aria-hidden />
+                    )
+                  }
+                  onClick={() => void openUpsertModal()}
                 >
                   {advisorClass ? 'Cập nhật lớp' : 'Tạo lớp'}
                 </Button>
@@ -578,44 +663,77 @@ export default function AdvisorClassPage() {
             </div>
 
             {loadingClass ? (
-              <p className="py-6 text-gray-500">Đang tải...</p>
+              <div className="space-y-3 py-4" aria-busy="true">
+                {[1, 2, 3].map(i => (
+                  <div
+                    key={i}
+                    className="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-white/10"
+                  />
+                ))}
+              </div>
             ) : (
               <Table className="text-left text-sm">
                 <TableHeader>
-                  <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                    <TableCell isHeader className="px-3 py-2 font-semibold">
+                  <TableRow className="border-b border-gray-200 bg-gray-50/90 dark:border-gray-800 dark:bg-white/[0.04]">
+                    <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Mã lớp
                     </TableCell>
-                    <TableCell isHeader className="px-3 py-2 font-semibold">
+                    <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Tên lớp
                     </TableCell>
-                    <TableCell isHeader className="px-3 py-2 font-semibold">
+                    <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Trạng thái
                     </TableCell>
-                    <TableCell isHeader className="px-3 py-2 font-semibold">
+                    <TableCell isHeader className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Thao tác
                     </TableCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {advisorClass ? (
-                    <TableRow className="border-b border-gray-100 dark:border-gray-800">
-                      <TableCell className="px-3 py-2">{advisorClass.class_code}</TableCell>
-                      <TableCell className="px-3 py-2">{advisorClass.class_name ?? '—'}</TableCell>
-                      <TableCell className="px-3 py-2">{advisorClass.status ?? '—'}</TableCell>
-                      <TableCell className="px-3 py-2">
-                        <Button size="sm" variant="outline" onClick={openClassDetail}>
+                    <TableRow className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50/90 dark:border-gray-800 dark:hover:bg-white/[0.03]">
+                      <TableCell className="px-4 py-3.5">
+                        <span className="font-mono text-sm font-bold text-gray-900 dark:text-white">
+                          {advisorClass.class_code}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-4 py-3.5 font-medium text-gray-800 dark:text-gray-200">
+                        {advisorClass.class_name ?? '—'}
+                      </TableCell>
+                      <TableCell className="px-4 py-3.5">
+                        <span className={classStatusBadgeClass(advisorClass.status)}>
+                          {advisorClass.status ?? '—'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-4 py-3.5 text-right">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          startIcon={<EyeIcon className="size-4 shrink-0" aria-hidden />}
+                          onClick={() => void openClassDetail()}
+                        >
                           Xem chi tiết
                         </Button>
                       </TableCell>
                     </TableRow>
                   ) : (
                     <TableRow>
-                      <td className="px-3 py-6 text-gray-500" colSpan={4}>
-                        {isAdmin && !selectedAdvisorId
-                          ? 'Chọn cố vấn để xem hoặc tạo lớp.'
-                          : 'Chưa có lớp cố vấn. ADMIN có thể bấm «Tạo lớp».'}
-                      </td>
+                      <TableCell colSpan={4} className="px-4 py-12 text-center">
+                        <div className="mx-auto flex max-w-md flex-col items-center gap-2">
+                          <div className="flex size-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400">
+                            <TableIcon className="size-6" aria-hidden />
+                          </div>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {isAdmin && !selectedAdvisorId
+                              ? 'Chọn cố vấn để xem hoặc tạo lớp.'
+                              : 'Chưa có lớp cố vấn.'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            ADMIN: dùng nút <span className="font-semibold text-brand-600">Tạo lớp</span> phía trên sau khi chọn cố vấn hợp lệ.
+                          </p>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -623,7 +741,7 @@ export default function AdvisorClassPage() {
             )}
 
             {isAdvisor && !canManageClass && (
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-4 rounded-lg border border-gray-200 bg-gray-50/80 px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-white/5 dark:text-gray-400">
                 Cố vấn chỉ xem lớp của mình. Tạo/cập nhật lớp do ADMIN thực hiện (theo API).
               </p>
             )}
@@ -631,16 +749,25 @@ export default function AdvisorClassPage() {
         )}
 
         {tab === 'members' && (
-          <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/3">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Danh sách thành viên
-              </h2>
+          <div className="rounded-2xl border border-gray-200/90 bg-white p-5 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)] ring-1 ring-gray-900/[0.035] dark:border-gray-800 dark:bg-gray-900/50 dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] dark:ring-white/[0.05] sm:p-6">
+            <div className="mb-5 flex flex-col gap-4 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                  Danh sách
+                </p>
+                <h3 className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                  <GroupIcon className="size-6 text-brand-500 dark:text-brand-400" aria-hidden />
+                  Thành viên lớp
+                </h3>
+              </div>
               {canManageMembers && (
                 <Button
+                  type="button"
                   size="sm"
-                  onClick={() => void openAddMembersModal()}
+                  variant="primary"
                   disabled={!currentClassId}
+                  startIcon={<PlusIcon className="size-4 shrink-0" aria-hidden />}
+                  onClick={() => void openAddMembersModal()}
                 >
                   Thêm sinh viên
                 </Button>
@@ -648,26 +775,35 @@ export default function AdvisorClassPage() {
             </div>
 
             {!currentClassId ? (
-              <p className="text-sm text-gray-500">
-                Chưa có <code>class_id</code>. Hãy tạo/xem lớp ở tab «Lớp cố vấn» trước.
-              </p>
+              <div className="rounded-xl border border-dashed border-amber-300/80 bg-amber-50/50 p-6 text-center dark:border-amber-500/30 dark:bg-amber-950/20">
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                  Chưa có <code className="rounded bg-white/80 px-1 font-mono text-xs dark:bg-black/30">class_id</code>
+                </p>
+                <p className="mt-2 text-xs text-amber-800/90 dark:text-amber-200/80">
+                  Tạo hoặc gán lớp ở tab <span className="font-semibold">Lớp cố vấn</span> trước khi thêm sinh viên.
+                </p>
+              </div>
             ) : loadingMembers ? (
-              <p className="py-6 text-gray-500">Đang tải...</p>
+              <div className="space-y-3 py-4" aria-busy="true">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100 dark:bg-white/10" />
+                ))}
+              </div>
             ) : (
               <>
                 <Table className="text-left text-sm">
                   <TableHeader>
-                    <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                    <TableRow className="border-b border-gray-200 bg-gray-50/90 dark:border-gray-800 dark:bg-white/[0.04]">
+                      <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Sinh viên
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Email
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Mã SV
                       </TableCell>
-                      <TableCell isHeader className="px-3 py-2 font-semibold">
+                      <TableCell isHeader className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Trạng thái
                       </TableCell>
                     </TableRow>
@@ -675,51 +811,66 @@ export default function AdvisorClassPage() {
                   <TableBody>
                     {members.length === 0 ? (
                       <TableRow>
-                        <td className="px-3 py-6 text-gray-500" colSpan={4}>
-                          Chưa có thành viên.
-                        </td>
+                        <TableCell colSpan={4} className="px-4 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                          Chưa có thành viên — thêm sinh viên bằng nút phía trên.
+                        </TableCell>
                       </TableRow>
                     ) : (
                       members.map(row => (
                         <TableRow
                           key={row._id}
-                          className="border-b border-gray-100 dark:border-gray-800"
+                          className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50/90 dark:border-gray-800 dark:hover:bg-white/[0.03]"
                         >
-                          <TableCell className="px-3 py-2">
+                          <TableCell className="px-4 py-3.5 font-medium text-gray-900 dark:text-white">
                             {row.student?.profile?.full_name ?? row.student?.username ?? '—'}
                           </TableCell>
-                          <TableCell className="px-3 py-2">{row.student?.email ?? '—'}</TableCell>
-                          <TableCell className="px-3 py-2">
+                          <TableCell className="px-4 py-3.5 text-sm text-gray-600 dark:text-gray-400">
+                            {row.student?.email ?? '—'}
+                          </TableCell>
+                          <TableCell className="px-4 py-3.5 font-mono text-sm text-gray-800 dark:text-gray-200">
                             {row.student?.student_info?.student_code ?? '—'}
                           </TableCell>
-                          <TableCell className="px-3 py-2">{row.status}</TableCell>
+                          <TableCell className="px-4 py-3.5">
+                            <span className={classStatusBadgeClass(row.status)}>{row.status}</span>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
                   </TableBody>
                 </Table>
                 {memberPagination && memberPagination.total_pages > 1 && (
-                  <div className="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <span>
-                      Trang {memberPagination.page}/{memberPagination.total_pages} —{' '}
-                      {memberPagination.total} thành viên
+                  <div className="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="tabular-nums">
+                      <span className="font-semibold text-gray-900 dark:text-white">{memberPagination.page}</span>
+                      <span className="mx-1 text-gray-400">/</span>
+                      {memberPagination.total_pages} trang —{' '}
+                      <span className="font-semibold text-gray-900 dark:text-white">{memberPagination.total}</span>{' '}
+                      thành viên
                     </span>
                     <div className="flex gap-2">
                       <Button
-                        size="sm"
+                        type="button"
+                        size="xs"
                         variant="outline"
+                        className="!px-2.5 font-semibold"
                         disabled={memberPage <= 1}
                         onClick={() => setMemberPage(p => Math.max(1, p - 1))}
+                        aria-label="Trang trước"
+                        startIcon={<AngleLeftIcon className="size-4" aria-hidden />}
                       >
-                        Trước
+                        <span className="sr-only">Trang trước</span>
                       </Button>
                       <Button
-                        size="sm"
+                        type="button"
+                        size="xs"
                         variant="outline"
+                        className="!px-2.5 font-semibold"
                         disabled={memberPage >= memberPagination.total_pages}
                         onClick={() => setMemberPage(p => p + 1)}
+                        aria-label="Trang sau"
+                        endIcon={<AngleRightIcon className="size-4" aria-hidden />}
                       >
-                        Sau
+                        <span className="sr-only">Trang sau</span>
                       </Button>
                     </div>
                   </div>
@@ -733,9 +884,20 @@ export default function AdvisorClassPage() {
       <Modal
         isOpen={classDetailOpen}
         onClose={() => setClassDetailOpen(false)}
-        className="max-w-lg p-6"
+        className="max-w-lg overflow-hidden p-0"
       >
-        <h3 className="mb-4 text-lg font-semibold">Chi tiết lớp cố vấn</h3>
+        <div className="border-b border-gray-100 bg-gradient-to-r from-brand-50/90 to-violet-50/40 px-6 py-4 dark:border-gray-800 dark:from-brand-950/40 dark:to-gray-900">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 text-brand-600 shadow-sm ring-1 ring-brand-200/60 dark:bg-white/10 dark:text-brand-300 dark:ring-brand-500/25">
+              <EyeIcon className="size-5" aria-hidden />
+            </span>
+            <div>
+              <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">Chi tiết lớp cố vấn</h3>
+              <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">Đọc nhanh — không chỉnh sửa tại đây</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-6 pt-4">
         {advisorClass && (
           <dl className="space-y-2 text-sm">
             {(
@@ -779,30 +941,56 @@ export default function AdvisorClassPage() {
             ).map(([k, v]) => (
               <div
                 key={k}
-                className="flex gap-2 border-b border-gray-100 pb-2 dark:border-gray-800"
+                className="flex gap-3 border-b border-gray-100 py-2.5 last:border-0 dark:border-gray-800"
               >
-                <dt className="w-32 shrink-0 font-medium text-gray-500">{k}</dt>
-                <dd className="break-all text-gray-800 dark:text-white/90">{v}</dd>
+                <dt className="w-36 shrink-0 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  {k}
+                </dt>
+                <dd className="min-w-0 flex-1 break-all text-sm font-medium text-gray-900 dark:text-white/90">
+                  {k === 'Trạng thái' && v !== '—' ? (
+                    <span className={classStatusBadgeClass(v)}>{v}</span>
+                  ) : (
+                    v
+                  )}
+                </dd>
               </div>
             ))}
           </dl>
         )}
-        <div className="mt-6 flex justify-end">
-          <Button size="sm" variant="outline" onClick={() => setClassDetailOpen(false)}>
+        <div className="mt-6 flex justify-end border-t border-gray-100 pt-4 dark:border-gray-800">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
+            onClick={() => setClassDetailOpen(false)}
+          >
             Đóng
           </Button>
+        </div>
         </div>
       </Modal>
 
       <Modal
         isOpen={upsertOpen}
         onClose={() => !savingClass && setUpsertOpen(false)}
-        className="max-w-md p-6"
+        className="max-w-md overflow-hidden p-0"
       >
-        <h3 className="mb-4 text-lg font-semibold">
-          {advisorClass ? 'Cập nhật lớp cố vấn' : 'Tạo lớp cố vấn'}
-        </h3>
-        <div className="space-y-4">
+        <div className="border-b border-gray-100 bg-gradient-to-r from-brand-50/90 to-white px-6 py-4 dark:border-gray-800 dark:from-brand-950/50 dark:to-gray-900">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/15 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
+              {advisorClass ? (
+                <PencilIcon className="size-5" aria-hidden />
+              ) : (
+                <PlusIcon className="size-5" aria-hidden />
+              )}
+            </span>
+            <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+              {advisorClass ? 'Cập nhật lớp cố vấn' : 'Tạo lớp cố vấn'}
+            </h3>
+          </div>
+        </div>
+        <div className="space-y-4 p-6">
           <div>
             <Label htmlFor="ac-class-code">Mã lớp *</Label>
             <InputField
@@ -875,23 +1063,34 @@ export default function AdvisorClassPage() {
                 }))
               }
               disabled={savingClass}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-900/[0.04] transition-shadow focus:border-brand-400 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:ring-white/[0.06]"
             >
               <option value="ACTIVE">ACTIVE</option>
               <option value="INACTIVE">INACTIVE</option>
             </select>
           </div>
         </div>
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="flex justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-white/[0.02]">
           <Button
+            type="button"
             size="sm"
             variant="outline"
             disabled={savingClass}
+            startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
             onClick={() => setUpsertOpen(false)}
           >
             Hủy
           </Button>
-          <Button size="sm" disabled={savingClass} onClick={() => void submitUpsert()}>
+          <Button
+            type="button"
+            size="sm"
+            variant="primary"
+            disabled={savingClass}
+            startIcon={
+              savingClass ? undefined : <CheckLineIcon className="size-4 shrink-0" aria-hidden />
+            }
+            onClick={() => void submitUpsert()}
+          >
             {savingClass ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </div>
@@ -900,13 +1099,21 @@ export default function AdvisorClassPage() {
       <Modal
         isOpen={addMembersOpen}
         onClose={() => !savingMembers && setAddMembersOpen(false)}
-        className="relative max-h-[70vh] max-w-lg overflow-auto p-6"
+        className="relative max-h-[70vh] max-w-lg overflow-hidden p-0"
       >
-        <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white/90">
-          Thêm sinh viên vào lớp
-        </h3>
+        <div className="border-b border-gray-100 bg-gradient-to-r from-emerald-50/90 via-white to-brand-50/40 px-6 py-4 dark:border-gray-800 dark:from-emerald-950/30 dark:via-gray-900 dark:to-brand-950/25">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+              <PlusIcon className="size-5" aria-hidden />
+            </span>
+            <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white/90">
+              Thêm sinh viên vào lớp
+            </h3>
+          </div>
+        </div>
+        <div className="max-h-[calc(70vh-8rem)] overflow-auto p-6">
         {advisorClass ? (
-          <div className="mb-4 rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-white/5 dark:text-gray-300">
+          <div className="mb-4 rounded-xl border border-gray-200/80 bg-gradient-to-b from-gray-50 to-white p-4 text-sm text-gray-700 shadow-sm ring-1 ring-gray-900/[0.03] dark:border-gray-700 dark:from-gray-900 dark:to-gray-950 dark:text-gray-300 dark:ring-white/[0.04]">
             <p>
               <span className="text-gray-500 dark:text-gray-400">Lớp: </span>
               <span className="font-medium text-gray-900 dark:text-white/90">
@@ -948,18 +1155,31 @@ export default function AdvisorClassPage() {
             placeholder="Chọn một hoặc nhiều"
           />
         )}
-        <div className="mt-6 flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+        <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
           <Button
+            type="button"
             size="sm"
             variant="outline"
             disabled={savingMembers}
+            startIcon={<CloseLineIcon className="size-4 shrink-0" aria-hidden />}
             onClick={() => setAddMembersOpen(false)}
           >
             Hủy
           </Button>
-          <Button size="sm" disabled={savingMembers} className="min-w-[120px]" onClick={() => void submitAddMembers()}>
-            {savingMembers ? 'Đang thêm...' : 'Thêm'}
+          <Button
+            type="button"
+            size="sm"
+            variant="primary"
+            disabled={savingMembers}
+            className="min-w-[140px]"
+            startIcon={
+              savingMembers ? undefined : <PlusIcon className="size-4 shrink-0" aria-hidden />
+            }
+            onClick={() => void submitAddMembers()}
+          >
+            {savingMembers ? 'Đang thêm...' : 'Thêm vào lớp'}
           </Button>
+        </div>
         </div>
       </Modal>
     </>
